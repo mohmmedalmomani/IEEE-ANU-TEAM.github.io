@@ -108,11 +108,45 @@
             text-align: center;
             margin-top: 1rem;
         }
+        .loading-msg {
+            text-align: center;
+            padding: 2rem;
+            color: cyan;
+        }
         footer {
             text-align: center;
             margin-top: 2rem;
             font-size: 0.8rem;
             color: #8bcbdd;
+        }
+        .clear-btn {
+            background: #ff4444;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 60px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Tajawal';
+            box-shadow: 0 0 10px rgba(255,0,0,0.5);
+            transition: 0.3s;
+            margin: 15px 0;
+        }
+        .clear-btn:hover {
+            transform: scale(1.02);
+            background: #ff0000;
+            box-shadow: 0 0 20px red;
+        }
+        .refresh-btn {
+            background: #00aaff;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 60px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Tajawal';
+            margin: 15px 10px;
         }
     </style>
 </head>
@@ -130,14 +164,14 @@
     </div>
     <div id="leaderboardContent" style="display: none;">
         <h1><i class="fas fa-trophy"></i> قائمة المتصدرين <i class="fas fa-clock"></i></h1>
-        <div id="winnerArea"></div>
-<!-- 👇 أضف هذا الزر هنا 👇 -->
-<div style="text-align: center; margin: 20px 0;">
-    <button id="clearDataBtn" style="background:#ff4444; border:none; padding:10px 25px; border-radius:60px; color:white; font-weight:bold; cursor:pointer; font-family:'Tajawal'; box-shadow:0 0 10px rgba(255,0,0,0.5);">
-        <i class="fas fa-trash-alt"></i> مسح جميع المحاولات السابقة
-    </button>
-</div>
-
+        <div id="winnerArea">
+            <div class="loading-msg">جاري تحميل البيانات...</div>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button id="refreshDataBtn" class="refresh-btn"><i class="fas fa-sync-alt"></i> تحديث البيانات</button>
+            <button id="clearDataBtn" class="clear-btn"><i class="fas fa-trash-alt"></i> مسح جميع المحاولات</button>
+        </div>
 
         <h2><i class="fas fa-users"></i> جميع المشاركين</h2>
         <div id="leaderboardTable"></div>
@@ -148,37 +182,49 @@
 
 <script>
     const ADMIN_PASSWORD = "admin2025"; // كلمة المرور - يمكنك تغييرها
+    
+    // ⚠️ IMPORTANT: استبدل هذا الرابط برابط Google Sheets المنشور كـ CSV ⚠️
+    // يمكنك الحصول على هذا الرابط من: ملف Google Sheets -> مشاركة -> نسخ الرابط
+    // أو استخدم هذا التنسيق: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/gviz/tq?tqx=out:csv&sheet=Sheet1
+    const SHEET_ID = "1Hq8Ovg8-J0tJGQbuid7lpHco3ezAGBN_Tkq1g1uJBpg"; // <--- ضع معرف الورقة هنا
+    const SHEET_NAME = "Quiz_Results"; // اسم الورقة (غالباً Sheet1)
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
 
-    function loadLeaderboard() {
-        const participants = JSON.parse(localStorage.getItem("quizParticipants") || "[]");
-        const sorted = [...participants].sort((a,b) => a.time - b.time);
-        const winner = sorted[0];
-        const winnerArea = document.getElementById("winnerArea");
-        if (winner) {
-            winnerArea.innerHTML = `
-                <div class="winner-card">
-                    <i class="fas fa-crown" style="font-size:3rem;"></i>
-                    <div class="winner-name">🏆 الفائز: ${escapeHtml(winner.name)} 🏆</div>
-                    <div class="winner-time" style="font-size:1.5rem;">⏱️ الزمن: ${formatTime(winner.time)}</div>
-                    <div style="margin-top:1rem;">🎁 يحصل على جائزة: شهادة تقدير + قسيمة خصم 50% 🎁</div>
-                </div>
-            `;
-        } else {
-            winnerArea.innerHTML = `<div class="empty-msg" style="text-align:center; padding:2rem;">لا يوجد مشاركون حتى الآن. كن أول من يشارك!</div>`;
+    // دالة لجلب البيانات من Google Sheets
+    async function fetchLeaderboardData() {
+        try {
+            const response = await fetch(CSV_URL);
+            const csvText = await response.text();
+            const rows = csvText.split("\n");
+            
+            // تخطي الصف الأول (العناوين)
+            const participants = [];
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i].trim() === "") continue;
+                const cols = rows[i].split(",");
+                if (cols.length >= 3) {
+                    // تنظيف البيانات من علامات الاقتباس
+                    let name = cols[0].replace(/^"|"$/g, '').trim();
+                    let time = parseFloat(cols[1]);
+                    let score = parseInt(cols[2]) || 0;
+                    if (!isNaN(time) && name && name !== "") {
+                        participants.push({ name, time, score });
+                    }
+                }
+            }
+            return participants.sort((a, b) => a.time - b.time);
+        } catch(e) {
+            console.error("Error loading data:", e);
+            return [];
         }
+    }
 
-        let tableHtml = `<table><th>#</th><th>الاسم</th><th>الزمن</th><th>النقاط</th></tr>`;
-        if (sorted.length === 0) {
-            tableHtml += `<tr><td colspan="4" style="text-align:center;">لا توجد بيانات</td></tr>`;
-        } else {
-            sorted.forEach((p, idx) => {
-                let rankClass = "";
-                if (idx === 0) rankClass = "rank-1";
-                tableHtml += `<tr class="${rankClass}">\n<td>${idx+1}</td>\n<td>${escapeHtml(p.name)}</td>\n<td>${formatTime(p.time)}</td>\n<td>${p.score}/10</td>\n</tr>`;
-            });
-        }
-        tableHtml += `abelle`;
-        document.getElementById("leaderboardTable").innerHTML = tableHtml;
+    // دالة لحفظ البيانات في Google Sheets (للمسح)
+    async function clearAllData() {
+        // ملاحظة: مسح البيانات عبر الـ API يتطلب إعدادات إضافية
+        // بدلاً من ذلك، نعطي تعليمات للمسؤول بحذف البيانات يدوياً من الورقة
+        alert("لحذف جميع البيانات، يرجى فتح ورقة Google Sheets وحذف الصفوف يدوياً (ما عدا الصف الأول للعناوين).\n\nرابط الورقة: https://docs.google.com/spreadsheets/d/" + SHEET_ID);
+        return false;
     }
 
     function formatTime(seconds) {
@@ -188,6 +234,7 @@
     }
 
     function escapeHtml(str) {
+        if (!str) return "";
         return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';
@@ -196,23 +243,70 @@
         });
     }
 
-    document.getElementById("loginBtn").addEventListener("click", function() {
+    async function loadLeaderboard() {
+        const winnerArea = document.getElementById("winnerArea");
+        const leaderboardTable = document.getElementById("leaderboardTable");
+        
+        winnerArea.innerHTML = `<div class="loading-msg"><i class="fas fa-spinner fa-pulse"></i> جاري تحميل البيانات...</div>`;
+        leaderboardTable.innerHTML = "";
+        
+        const participants = await fetchLeaderboardData();
+        
+        if (participants.length === 0) {
+            winnerArea.innerHTML = `<div class="empty-msg" style="text-align:center; padding:2rem;">📭 لا يوجد مشاركون حتى الآن. كن أول من يشارك!</div>`;
+            leaderboardTable.innerHTML = `<div class="empty-msg" style="text-align:center; padding:2rem;">لا توجد بيانات لعرضها</div>`;
+            return;
+        }
+        
+        const winner = participants[0];
+        winnerArea.innerHTML = `
+            <div class="winner-card">
+                <i class="fas fa-crown" style="font-size:3rem;"></i>
+                <div class="winner-name">🏆 الفائز: ${escapeHtml(winner.name)} 🏆</div>
+                <div class="winner-time" style="font-size:1.5rem;">⏱️ الزمن: ${formatTime(winner.time)}</div>
+                <div style="margin-top:1rem;">🎁 يحصل على جائزة: شهادة تقدير + قسيمة خصم 50% 🎁</div>
+            </div>
+        `;
+        
+        let tableHtml = `<table><th>#</th><th>الاسم</th><th>الزمن</th><th>النقاط</th></tr>`;
+        participants.forEach((p, idx) => {
+            let rankClass = (idx === 0) ? "rank-1" : "";
+            tableHtml += `<tr class="${rankClass}">
+                <td>${idx + 1}</td>
+                <td>${escapeHtml(p.name)}</td>
+                <td>${formatTime(p.time)}</td>
+                <td>${p.score}/10</td>
+            </tr>`;
+        });
+        tableHtml += `闭台`;
+        leaderboardTable.innerHTML = tableHtml;
+    }
+
+    // زر تسجيل الدخول
+    document.getElementById("loginBtn").addEventListener("click", async function() {
         const password = document.getElementById("passwordInput").value;
         if (password === ADMIN_PASSWORD) {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("leaderboardContent").style.display = "block";
-            loadLeaderboard();
+            await loadLeaderboard();
         } else {
             document.getElementById("errorMsg").innerHTML = "كلمة السر غير صحيحة! الوصول غير مسموح.";
         }
     });
+    
+    // زر تحديث البيانات
+    document.getElementById("refreshDataBtn")?.addEventListener("click", async function() {
+        await loadLeaderboard();
+    });
+    
+    // زر مسح البيانات
     document.getElementById("clearDataBtn")?.addEventListener("click", function() {
-    if(confirm("⚠️ تحذير: سيتم حذف جميع المحاولات السابقة نهائياً. هل أنت متأكد؟")) {
-        localStorage.removeItem("quizParticipants");
-        alert("✅ تم مسح جميع البيانات! سيتم تحديث الصفحة.");
-        location.reload();
-    }
-});
+        if(confirm("⚠️ تحذير: سيتم حذف جميع المحاولات السابقة من Google Sheets نهائياً.\n\nهل أنت متأكد؟")) {
+            // فتح الورقة في نافذة جديدة للمسح اليدوي
+            window.open(`https://docs.google.com/spreadsheets/d/${SHEET_ID}`, '_blank');
+            alert("✅ تم فتح ورقة البيانات.\n\nالرجاء حذف جميع الصفوف (ما عدا الصف الأول للعناوين) ثم اضغط 'تحديث البيانات'.");
+        }
+    });
 </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المتصدرين - IEEE ANU</title>
+    <title>لوحة التحكم - المتصدرين (خاص)</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -23,13 +23,27 @@
             border-radius: 2rem;
             padding: 2rem;
             border: 1px solid cyan;
+            box-shadow: 0 0 30px rgba(0,255,255,0.2);
         }
-        h1 { text-align: center; color: cyan; margin-bottom: 1rem; }
-        .login-box { text-align: center; padding: 2rem; }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #0ff, #fff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+        .login-box {
+            text-align: center;
+            padding: 2rem;
+        }
         .login-box input {
-            padding: 0.8rem;
+            padding: 0.8rem 1.2rem;
             border-radius: 60px;
             border: none;
+            font-family: 'Tajawal';
+            font-size: 1rem;
             width: 250px;
             text-align: center;
             margin: 1rem;
@@ -37,12 +51,13 @@
             color: white;
         }
         .login-btn {
-            background: cyan;
+            background: #0ff;
             border: none;
             padding: 0.8rem 2rem;
             border-radius: 60px;
-            cursor: pointer;
             font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
         }
         .winner-card {
             background: linear-gradient(135deg, #ffd700, #ffaa00);
@@ -57,21 +72,70 @@
             from { box-shadow: 0 0 10px gold; }
             to { box-shadow: 0 0 30px gold; }
         }
-        .winner-name { font-size: 2rem; font-weight: 800; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { padding: 0.8rem; text-align: center; border-bottom: 1px solid rgba(0,255,255,0.3); }
-        th { background: cyan; color: #02212e; }
+        .winner-name {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.8rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(0,255,255,0.3);
+        }
+        th {
+            background: #0ff;
+            color: #02212e;
+        }
         .rank-1 { background: rgba(255,215,0,0.2); font-weight: bold; }
         .btn-back {
             display: block;
             width: fit-content;
             margin: 2rem auto 0;
-            background: cyan;
+            background: #0ff;
             padding: 0.8rem 2rem;
             border-radius: 60px;
             text-decoration: none;
             color: #02161f;
             font-weight: bold;
+            text-align: center;
+        }
+        .error-msg {
+            color: #ff8888;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .loading-msg {
+            text-align: center;
+            padding: 2rem;
+            color: cyan;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #8bcbdd;
+        }
+        .clear-btn {
+            background: #ff4444;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 60px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Tajawal';
+            box-shadow: 0 0 10px rgba(255,0,0,0.5);
+            transition: 0.3s;
+            margin: 15px 0;
+        }
+        .clear-btn:hover {
+            transform: scale(1.02);
+            background: #ff0000;
+            box-shadow: 0 0 20px red;
         }
         .refresh-btn {
             background: #00aaff;
@@ -81,96 +145,168 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
+            font-family: 'Tajawal';
             margin: 15px 10px;
         }
-        .error-msg { color: #ff8888; text-align: center; margin-top: 1rem; }
-        .loading-msg { text-align: center; padding: 2rem; color: cyan; }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="container" id="mainContainer">
     <div id="loginSection">
         <div class="login-box">
-            <h1><i class="fas fa-lock"></i> لوحة التحكم</h1>
-            <input type="password" id="passwordInput" placeholder="كلمة السر">
+            <h1><i class="fas fa-lock"></i> لوحة التحكم - خاصة</h1>
+            <p style="margin-bottom: 1rem;">هذه الصفحة مخصصة للمسؤول فقط</p>
+            <input type="password" id="passwordInput" placeholder="أدخل كلمة السر">
             <br>
-            <button class="login-btn" id="loginBtn">دخول</button>
+            <button class="login-btn" id="loginBtn"><i class="fas fa-unlock-alt"></i> دخول</button>
             <div id="errorMsg" class="error-msg"></div>
         </div>
     </div>
     <div id="leaderboardContent" style="display: none;">
-        <h1><i class="fas fa-trophy"></i> قائمة المتصدرين</h1>
-        <div id="winnerArea"><div class="loading-msg">جاري تحميل البيانات...</div></div>
-        <div style="text-align: center;">
-            <button id="refreshDataBtn" class="refresh-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
+        <h1><i class="fas fa-trophy"></i> قائمة المتصدرين <i class="fas fa-clock"></i></h1>
+        <div id="winnerArea">
+            <div class="loading-msg">جاري تحميل البيانات...</div>
         </div>
-        <h2>جميع المشاركين</h2>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button id="refreshDataBtn" class="refresh-btn"><i class="fas fa-sync-alt"></i> تحديث البيانات</button>
+            <button id="clearDataBtn" class="clear-btn"><i class="fas fa-trash-alt"></i> مسح جميع المحاولات</button>
+        </div>
+
+        <h2><i class="fas fa-users"></i> جميع المشاركين</h2>
         <div id="leaderboardTable"></div>
-        <a href="index.html" class="btn-back">العودة للاختبار</a>
+        <a href="index.html" class="btn-back"><i class="fas fa-arrow-right"></i> العودة للاختبار</a>
+        <footer>أقل وقت يفوز بالجائزة الكبرى | Mohammed Almomani - IEEE ANU</footer>
     </div>
 </div>
 
 <script>
-    const ADMIN_PASSWORD = "admin2025";
-    // ⚠️ ضع معرف الورقة هنا (من رابط Google Sheets)
-    const SHEET_ID = "YOUR_SHEET_ID_HERE";
-    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
+    const ADMIN_PASSWORD = "admin2025"; // كلمة المرور - يمكنك تغييرها
+    
+    // ⚠️ IMPORTANT: استبدل هذا الرابط برابط Google Sheets المنشور كـ CSV ⚠️
+    // يمكنك الحصول على هذا الرابط من: ملف Google Sheets -> مشاركة -> نسخ الرابط
+    // أو استخدم هذا التنسيق: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/gviz/tq?tqx=out:csv&sheet=Sheet1
+    const SHEET_ID = "10gsFRqZat3NByFp_mZQLP7VH6QM8AP410sFKQHzVhaU"; // <--- ضع معرف الورقة هنا
+    const SHEET_NAME = "Quiz_Results"; // اسم الورقة (غالباً Sheet1)
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
 
-    async function fetchData() {
+    // دالة لجلب البيانات من Google Sheets
+    async function fetchLeaderboardData() {
         try {
-            const res = await fetch(CSV_URL + "?t=" + new Date().getTime());
-            const csv = await res.text();
-            const rows = csv.split("\n").slice(1);
+            const response = await fetch(CSV_URL);
+            const csvText = await response.text();
+            const rows = csvText.split("\n");
+            
+            // تخطي الصف الأول (العناوين)
             const participants = [];
-            for (let i = 0; i < rows.length; i++) {
+            for (let i = 1; i < rows.length; i++) {
                 if (rows[i].trim() === "") continue;
                 const cols = rows[i].split(",");
                 if (cols.length >= 3) {
+                    // تنظيف البيانات من علامات الاقتباس
                     let name = cols[0].replace(/^"|"$/g, '').trim();
                     let time = parseFloat(cols[1]);
                     let score = parseInt(cols[2]) || 0;
-                    if (!isNaN(time) && name) participants.push({ name, time, score });
+                    if (!isNaN(time) && name && name !== "") {
+                        participants.push({ name, time, score });
+                    }
                 }
             }
-            return participants.sort((a,b) => a.time - b.time);
-        } catch(e) { return []; }
+            return participants.sort((a, b) => a.time - b.time);
+        } catch(e) {
+            console.error("Error loading data:", e);
+            return [];
+        }
     }
 
-    function formatTime(sec) {
-        let m = Math.floor(sec / 60);
-        let s = Math.floor(sec % 60);
-        return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    // دالة لحفظ البيانات في Google Sheets (للمسح)
+    async function clearAllData() {
+        // ملاحظة: مسح البيانات عبر الـ API يتطلب إعدادات إضافية
+        // بدلاً من ذلك، نعطي تعليمات للمسؤول بحذف البيانات يدوياً من الورقة
+        alert("لحذف جميع البيانات، يرجى فتح ورقة Google Sheets وحذف الصفوف يدوياً (ما عدا الصف الأول للعناوين).\n\nرابط الورقة: https://docs.google.com/spreadsheets/d/" + SHEET_ID);
+        return false;
+    }
+
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
     async function loadLeaderboard() {
-        const participants = await fetchData();
         const winnerArea = document.getElementById("winnerArea");
-        const tableDiv = document.getElementById("leaderboardTable");
+        const leaderboardTable = document.getElementById("leaderboardTable");
+        
+        winnerArea.innerHTML = `<div class="loading-msg"><i class="fas fa-spinner fa-pulse"></i> جاري تحميل البيانات...</div>`;
+        leaderboardTable.innerHTML = "";
+        
+        const participants = await fetchLeaderboardData();
+        
         if (participants.length === 0) {
-            winnerArea.innerHTML = "<div style='text-align:center;padding:2rem;'>لا يوجد مشاركون بعد</div>";
-            tableDiv.innerHTML = "<div style='text-align:center;padding:2rem;'>لا توجد بيانات</div>";
+            winnerArea.innerHTML = `<div class="empty-msg" style="text-align:center; padding:2rem;">📭 لا يوجد مشاركون حتى الآن. كن أول من يشارك!</div>`;
+            leaderboardTable.innerHTML = `<div class="empty-msg" style="text-align:center; padding:2rem;">لا توجد بيانات لعرضها</div>`;
             return;
         }
-        const w = participants[0];
-        winnerArea.innerHTML = `<div class="winner-card"><i class="fas fa-crown" style="font-size:3rem;"></i><div class="winner-name">🏆 الفائز: ${w.name} 🏆</div><div>⏱️ الزمن: ${formatTime(w.time)}</div><div>⭐ النقاط: ${w.score}/10 ⭐</div><div style="margin-top:1rem;">🎁 جائزة: شهادة + قسيمة خصم 50% 🎁</div></div>`;
-        let html = `<tr><th>#</th><th>الاسم</th><th>الزمن</th><th>النقاط</th>`;
-        participants.forEach((p, i) => {
-            html += `<tr class="${i===0?'rank-1':''}"><td>${i+1}</td><td>${p.name}</td><td>${formatTime(p.time)}</td><td>${p.score}/10</td></tr>`;
+        
+        const winner = participants[0];
+        winnerArea.innerHTML = `
+            <div class="winner-card">
+                <i class="fas fa-crown" style="font-size:3rem;"></i>
+                <div class="winner-name">🏆 الفائز: ${escapeHtml(winner.name)} 🏆</div>
+                <div class="winner-time" style="font-size:1.5rem;">⏱️ الزمن: ${formatTime(winner.time)}</div>
+                <div style="margin-top:1rem;">🎁 يحصل على جائزة: شهادة تقدير + قسيمة خصم 50% 🎁</div>
+            </div>
+        `;
+        
+        let tableHtml = `<table><th>#</th><th>الاسم</th><th>الزمن</th><th>النقاط</th></tr>`;
+        participants.forEach((p, idx) => {
+            let rankClass = (idx === 0) ? "rank-1" : "";
+            tableHtml += `<tr class="${rankClass}">
+                <td>${idx + 1}</td>
+                <td>${escapeHtml(p.name)}</td>
+                <td>${formatTime(p.time)}</td>
+                <td>${p.score}/10</td>
+            </tr>`;
         });
-        html += `</table>`;
-        tableDiv.innerHTML = html;
+        tableHtml += `闭台`;
+        leaderboardTable.innerHTML = tableHtml;
     }
 
-    document.getElementById("loginBtn").onclick = () => {
-        if (document.getElementById("passwordInput").value === ADMIN_PASSWORD) {
+    // زر تسجيل الدخول
+    document.getElementById("loginBtn").addEventListener("click", async function() {
+        const password = document.getElementById("passwordInput").value;
+        if (password === ADMIN_PASSWORD) {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("leaderboardContent").style.display = "block";
-            loadLeaderboard();
+            await loadLeaderboard();
         } else {
-            document.getElementById("errorMsg").innerHTML = "كلمة السر غير صحيحة!";
+            document.getElementById("errorMsg").innerHTML = "كلمة السر غير صحيحة! الوصول غير مسموح.";
         }
-    };
-    document.getElementById("refreshDataBtn")?.addEventListener("click", loadLeaderboard);
+    });
+    
+    // زر تحديث البيانات
+    document.getElementById("refreshDataBtn")?.addEventListener("click", async function() {
+        await loadLeaderboard();
+    });
+    
+    // زر مسح البيانات
+    document.getElementById("clearDataBtn")?.addEventListener("click", function() {
+        if(confirm("⚠️ تحذير: سيتم حذف جميع المحاولات السابقة من Google Sheets نهائياً.\n\nهل أنت متأكد؟")) {
+            // فتح الورقة في نافذة جديدة للمسح اليدوي
+            window.open(`https://docs.google.com/spreadsheets/d/${SHEET_ID}`, '_blank');
+            alert("✅ تم فتح ورقة البيانات.\n\nالرجاء حذف جميع الصفوف (ما عدا الصف الأول للعناوين) ثم اضغط 'تحديث البيانات'.");
+        }
+    });
 </script>
 </body>
 </html>

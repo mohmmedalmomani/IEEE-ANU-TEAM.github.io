@@ -393,7 +393,11 @@
 </div>
 
 <script>
-    // Updated Questions in English
+    // ======================== التكوين: رابط Google Apps Script ========================
+    // ⚠️ IMPORTANT: استبدل هذا الرابط برابط تطبيق الويب الذي أنشأته في Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNTrTGLxsmQGPC--6lub3SuNdbpPPfOdWPdjKQjCBrxNfdcJQ3L8oQSdgUthyZkXvW/exec"; // <--- غيّر هذا الرابط
+    
+    // الأسئلة بالإنجليزية
     const QUESTIONS = [
         { text: "Which of the following represents the correct syntax for defining a variable in C++?", options: ["int = x 5;", "int x = 5;", "x int = 5;", "5 = int x;"], correct: 1 },
         { text: "What is the main difference between compiled and interpreted languages?", options: ["There is no difference", "A compiler executes directly without translation", "A compiler converts to machine language before execution", "An interpreter is always faster"], correct: 2 },
@@ -522,37 +526,77 @@
         return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
     }
 
+    // ======================== حفظ البيانات في Google Sheets ========================
+    async function saveToGoogleSheets(name, timeSec, scorePoints) {
+        try {
+            // استخدام fetch مع mode: 'no-cors' لتجنب مشاكل CORS
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: name,
+                    time: timeSec,
+                    score: scorePoints,
+                    date: new Date().toISOString()
+                })
+            });
+            return true;
+        } catch(e) {
+            console.error("Error saving to Google Sheets:", e);
+            return false;
+        }
+    }
+
+    // ======================== عرض نافذة النتيجة والحفظ ========================
     function saveResultAndRedirect() {
         finalElapsedSeconds = getTotalElapsedSeconds();
         if (timerInterval) clearInterval(timerInterval);
         quizCompleted = true;
         const finalScore = computeScore();
-        const resultDiv = document.createElement("div");
-        resultDiv.innerHTML = `
-            <div class="result-card">
-                <h2><i class="fas fa-chart-line"></i> Final Result</h2>
-                <div style="font-size:2rem; font-weight:800; background:#0ff; display:inline-block; padding:0.2rem 1.5rem; border-radius:60px; margin:0.5rem 0;">${finalScore} / 10</div>
-                <p style="font-size:1.2rem; margin:1rem 0;">⏱️ Total Time: ${formatTime(finalElapsedSeconds)}</p>
-                <div class="name-input-area">
-                    <input type="text" id="participantName" placeholder="Enter your name" maxlength="30">
-                    <button class="save-btn" id="saveResultBtn"><i class="fas fa-save"></i> Save Result</button>
-                </div>
-                <div class="team-message">– Proudly | Mohammed Almomani | IEEE ANU</div>
-            </div>
-        `;
+        
+        // إخفاء عناصر الاختبار
         document.querySelector(".question-area").style.display = "none";
         document.querySelector(".action-area").style.display = "none";
         document.querySelector(".stats-bar").style.display = "none";
         document.querySelector(".timer-section").style.display = "none";
+        
+        // إنشاء بطاقة النتيجة
+        const resultDiv = document.createElement("div");
+        resultDiv.className = "result-card";
+        resultDiv.innerHTML = `
+            <h2><i class="fas fa-chart-line"></i> Final Result</h2>
+            <div style="font-size:2rem; font-weight:800; background:#0ff; display:inline-block; padding:0.2rem 1.5rem; border-radius:60px; margin:0.5rem 0;">${finalScore} / 10</div>
+            <p style="font-size:1.2rem; margin:1rem 0;">⏱️ Total Time: ${formatTime(finalElapsedSeconds)}</p>
+            <div class="name-input-area">
+                <input type="text" id="participantName" placeholder="Enter your name" maxlength="30">
+                <button class="save-btn" id="saveResultBtn"><i class="fas fa-save"></i> Save Result</button>
+            </div>
+            <div class="team-message">– Proudly | Mohammed Almomani | IEEE ANU</div>
+        `;
         document.getElementById("quizApp").appendChild(resultDiv);
-        document.getElementById("saveResultBtn")?.addEventListener("click", () => {
+        
+        // حدث حفظ النتيجة
+        document.getElementById("saveResultBtn")?.addEventListener("click", async () => {
             const name = document.getElementById("participantName").value.trim();
-            if (name === "") { showMessage("Please enter your name", "#ffaa66"); return; }
-            const participants = JSON.parse(localStorage.getItem("quizParticipants") || "[]");
-            participants.push({ name: name, time: finalElapsedSeconds, score: finalScore, date: new Date().toISOString() });
-            localStorage.setItem("quizParticipants", JSON.stringify(participants));
-            showMessage("Your result has been saved successfully! 🎉", "#24a85c");
-            setTimeout(() => { window.location.reload(); }, 2000);
+            if (name === "") { 
+                showMessage("Please enter your name", "#ffaa66"); 
+                return; 
+            }
+            
+            showMessage("Saving your result...", "#0ff");
+            const success = await saveToGoogleSheets(name, finalElapsedSeconds, finalScore);
+            
+            if (success) {
+                showMessage("✅ Your result has been saved globally! 🎉", "#24a85c");
+            } else {
+                showMessage("⚠️ Error saving result. Please try again.", "#ff4444");
+            }
+            
+            // الانتظار ثانيتين ثم العودة إلى صفحة الاختبار الجديد
+            setTimeout(() => { 
+                window.location.reload(); 
+            }, 2500);
         });
     }
 
@@ -571,6 +615,7 @@
         computeScore();
         loadQuestion();
         startGlobalTimer();
+        // إظهار العناصر مرة أخرى
         document.querySelector(".question-area").style.display = "block";
         document.querySelector(".action-area").style.display = "flex";
         document.querySelector(".stats-bar").style.display = "flex";

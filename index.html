@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>IEEE ANU | Speed Challenge - Knowledge Race</title>
+    <title>IEEE ANU | Speed Challenge</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -16,22 +16,6 @@
             justify-content: center;
             align-items: center;
             padding: 1.5rem;
-            position: relative;
-            overflow-x: hidden;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background-image: radial-gradient(circle at 20% 40%, rgba(0,255,255,0.15) 1.5px, transparent 1.5px);
-            background-size: 55px 55px;
-            pointer-events: none;
-            animation: floatBg 25s linear infinite;
-        }
-        @keyframes floatBg {
-            0% { background-position: 0 0; }
-            100% { background-position: 120px 120px; }
         }
         .splash-screen {
             position: fixed;
@@ -40,14 +24,12 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg, #010a14, #021e2a);
-            backdrop-filter: blur(2px);
             z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: opacity 1s ease, visibility 0.8s;
             flex-direction: column;
-            gap: 2rem;
+            transition: opacity 1s ease;
         }
         .ieee-card {
             text-align: center;
@@ -55,304 +37,116 @@
             padding: 3rem 4rem;
             border-radius: 4rem;
             backdrop-filter: blur(16px);
-            border: 2px solid rgba(0, 255, 255, 0.6);
-            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
-            animation: neonPulse 2s infinite alternate, floatGlow 3s infinite ease-in-out;
+            border: 2px solid cyan;
+            animation: glow 2s infinite alternate;
         }
-        @keyframes neonPulse {
-            0% { border-color: rgba(0, 255, 255, 0.4); box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); }
-            100% { border-color: rgba(0, 255, 255, 1); box-shadow: 0 0 45px rgba(0, 255, 255, 0.8); }
+        @keyframes glow {
+            from { box-shadow: 0 0 10px cyan; }
+            to { box-shadow: 0 0 40px cyan; }
         }
-        @keyframes floatGlow {
-            0% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-12px) scale(1.02); }
-            100% { transform: translateY(0px) scale(1); }
-        }
-        .ieee-text {
-            font-size: 3rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ffffff, #0ff, #0ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: textFlicker 1.5s infinite alternate;
-        }
-        @keyframes textFlicker {
-            0% { opacity: 0.9; text-shadow: 0 0 2px cyan; }
-            100% { opacity: 1; text-shadow: 0 0 20px cyan; }
-        }
-        .sub-ieee {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #bbffff;
-            margin-top: 0.5rem;
-            background: rgba(0,0,0,0.6);
-            padding: 0.5rem 1.5rem;
-            border-radius: 60px;
-        }
-        .developer-name {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #aaffdd;
-            margin-top: 0.8rem;
-            background: rgba(0, 255, 255, 0.15);
-            display: inline-block;
-            padding: 0.3rem 1.2rem;
-            border-radius: 40px;
-            border: 1px dashed #0ff;
-        }
+        .ieee-text { font-size: 3rem; font-weight: 900; color: cyan; }
         .start-quiz-btn {
-            background: linear-gradient(95deg, #0ff, #0088aa);
+            background: cyan;
             border: none;
             font-size: 1.7rem;
-            font-weight: bold;
             padding: 1rem 2.8rem;
             border-radius: 60px;
-            color: #02161f;
             cursor: pointer;
-            font-family: 'Tajawal', sans-serif;
-            display: inline-flex;
-            align-items: center;
-            gap: 15px;
             margin-top: 2rem;
-            transition: 0.3s;
-            box-shadow: 0 0 20px cyan;
-            animation: bounceBtn 1.2s infinite;
-        }
-        .start-quiz-btn:hover {
-            transform: scale(1.07);
-            background: linear-gradient(95deg, #2af, #00bbdd);
-            box-shadow: 0 0 35px cyan;
-        }
-        @keyframes bounceBtn {
-            0%,100%{ transform: translateY(0); }
-            50%{ transform: translateY(-7px); }
+            font-weight: bold;
         }
         .quiz-container {
             max-width: 1000px;
             width: 100%;
-            background: rgba(10, 25, 35, 0.8);
+            background: rgba(10, 25, 35, 0.85);
             backdrop-filter: blur(12px);
-            border-radius: 3rem;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 255, 255, 0.4);
-            overflow: hidden;
-            opacity: 0;
-            transform: scale(0.96);
-            visibility: hidden;
-            transition: opacity 0.6s ease, visibility 0s linear 0.6s, transform 0.5s;
-        }
-        .quiz-container.visible {
-            opacity: 1;
-            transform: scale(1);
-            visibility: visible;
-            transition: opacity 0.6s ease, visibility 0s linear 0s, transform 0.5s;
-        }
-        .quiz-header {
-            background: linear-gradient(120deg, #0b2b38, #041a24);
-            padding: 1.2rem 2rem;
-            text-align: center;
-            border-bottom: 3px solid #0ff;
-        }
-        .quiz-header h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #aaffff, #0ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .timer-section {
-            background: rgba(0, 0, 0, 0.6);
-            padding: 0.8rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(0,255,255,0.3);
+            border-radius: 2rem;
+            padding: 2rem;
+            border: 1px solid cyan;
+            display: none;
         }
         .timer-box {
-            display: inline-flex;
-            align-items: center;
-            gap: 15px;
             background: #000000aa;
+            display: inline-block;
             padding: 0.5rem 1.8rem;
             border-radius: 60px;
-            backdrop-filter: blur(5px);
             font-size: 2rem;
-            font-weight: bold;
-            color: #0ff;
+            color: cyan;
             font-family: monospace;
-        }
-        .stats-bar {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 0.8rem 2rem;
-            color: #e0f2fe;
-            font-weight: bold;
-        }
-        .question-counter, .score-board {
-            background: #00000070;
-            padding: 0.4rem 1.2rem;
-            border-radius: 40px;
-        }
-        .question-area {
-            padding: 2rem 2rem 1rem;
         }
         .question-text {
             background: rgba(0, 15, 25, 0.7);
-            border-radius: 2rem;
+            border-radius: 1.5rem;
             padding: 1.5rem;
-            margin-bottom: 2rem;
-            border-right: 8px solid #0ff;
-            font-size: 1.55rem;
-            font-weight: 700;
-            color: #f0fcff;
+            margin: 1rem 0;
+            font-size: 1.3rem;
+            font-weight: bold;
         }
         .options-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1.2rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
         }
         .option-card {
             background: rgba(15, 40, 55, 0.85);
-            backdrop-filter: blur(5px);
             border-radius: 2rem;
-            padding: 1rem 1.2rem;
-            display: flex;
-            align-items: center;
+            padding: 1rem;
             cursor: pointer;
-            transition: 0.25s ease;
-            border: 1px solid rgba(0, 255, 255, 0.3);
+            border: 1px solid rgba(0,255,255,0.3);
         }
-        .option-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            background: rgba(30, 80, 110, 0.95);
-            border-color: #0ff;
-        }
-        .option-prefix {
-            width: 42px;
-            height: 42px;
-            background: #0ff;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.3rem;
-            margin-left: 1rem;
-            color: #022b36;
-        }
-        .option-text {
-            font-size: 1.05rem;
-            font-weight: 500;
-            color: #f2faff;
-            flex: 1;
-        }
-        .option-card.selected {
-            background: linear-gradient(145deg, #0e6b5e, #06473f);
-            border: 2px solid #0ff;
-            box-shadow: 0 0 18px rgba(0, 255, 255, 0.6);
-        }
-        .option-card.correct-highlight {
-            background: #0f7b3a;
-            border: 2px solid #a0ffa0;
-            animation: pulseGreen 0.5s ease;
-        }
-        .option-card.wrong-highlight {
-            background: #ac2f3a;
-            border: 2px solid #ffb0a8;
-            animation: shake 0.4s ease;
-        }
-        @keyframes pulseGreen {
-            0% { transform: scale(1); background: #0f7b3a; }
-            50% { transform: scale(1.02); background: #2bbd5a; box-shadow: 0 0 0 8px rgba(100,255,100,0.4);}
-            100% { transform: scale(1); background: #0f7b3a; }
-        }
-        @keyframes shake {
-            0%,100% { transform: translateX(0); }
-            25% { transform: translateX(-6px); }
-            75% { transform: translateX(6px); }
-        }
-        .action-area {
-            padding: 0 2rem 2rem;
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
+        .option-card:hover { background: #0e6b5e; }
+        .option-card.correct-highlight { background: #0f7b3a; }
+        .option-card.wrong-highlight { background: #ac2f3a; }
         .next-btn {
-            background: linear-gradient(95deg, #0ff, #00a3cc);
+            background: cyan;
             border: none;
-            padding: 1rem 2.5rem;
-            font-size: 1.3rem;
-            font-weight: bold;
+            padding: 1rem 2rem;
             border-radius: 60px;
-            color: #02161f;
+            font-size: 1.2rem;
+            font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
-            width: 100%;
-            max-width: 280px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-        .next-btn:hover {
-            background: linear-gradient(95deg, #2af, #0099cc);
-            transform: scale(1.02);
+            margin-top: 1rem;
         }
         .result-card {
-            background: rgba(0, 25, 35, 0.95);
-            backdrop-filter: blur(18px);
-            margin: 1rem 2rem 2rem;
-            border-radius: 2rem;
-            padding: 1.8rem;
             text-align: center;
-            color: #caffff;
-            border: 2px solid cyan;
-            animation: bounceIn 0.7s;
+            padding: 1rem;
         }
         .name-input-area {
-            margin: 1rem 0;
             display: flex;
-            gap: 10px;
+            gap: 1rem;
             justify-content: center;
+            margin: 1rem 0;
             flex-wrap: wrap;
         }
         .name-input-area input {
-            padding: 0.8rem 1.2rem;
+            padding: 0.8rem;
             border-radius: 60px;
             border: none;
-            font-family: 'Tajawal';
-            font-size: 1rem;
             width: 250px;
             text-align: center;
             background: #022b36;
             color: white;
         }
         .save-btn {
-            background: #0ff;
+            background: cyan;
             border: none;
             padding: 0.8rem 1.5rem;
             border-radius: 60px;
-            font-weight: bold;
             cursor: pointer;
+            font-weight: bold;
         }
         .team-message {
-            margin-top: 1rem;
-            padding: 0.8rem;
-            background: rgba(0, 255, 255, 0.1);
-            border-radius: 2rem;
-        }
-        @keyframes bounceIn {
-            0% { opacity: 0; transform: scale(0.7);}
-            100% { transform: scale(1);}
-        }
-        footer {
             text-align: center;
-            padding: 1rem;
-            font-size: 0.8rem;
-            color: #8bcbdd;
+            margin-top: 1rem;
+            color: cyan;
         }
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+        }
+        @media (max-width: 600px) { .ieee-card { padding: 2rem; } .ieee-text { font-size: 2rem; } }
     </style>
 </head>
 <body>
@@ -360,40 +154,31 @@
 <div class="splash-screen" id="splashScreen">
     <div class="ieee-card">
         <div class="ieee-text"><i class="fas fa-microchip"></i> IEEE ANU</div>
-        <div class="sub-ieee">Developed by IEEE ANU TEAM</div>
-        <div class="developer-name"><i class="fas fa-code"></i> Mohammed Almomani</div>
+        <div class="sub-ieee" style="color:white; margin-top:1rem;">Global Speed Challenge</div>
+        <div style="color:#aaffdd; margin:0.5rem;">Mohammed Almomani</div>
         <button class="start-quiz-btn" id="startBtn"><i class="fas fa-play"></i> Start Challenge</button>
     </div>
 </div>
 
 <div class="quiz-container" id="quizApp">
-    <div class="quiz-header">
-        <h1><i class="fas fa-stopwatch"></i> Speed Knowledge Race</h1>
-        <p>Answer as fast as you can - The fastest total time wins the prize</p>
-    </div>
-    <div class="timer-section">
-        <div class="timer-box">
-            <i class="fas fa-hourglass-half"></i>
-            <span id="totalTimerDisplay">00:00</span>
-        </div>
-        <div class="timer-label">Total Test Time</div>
+    <h1 style="text-align:center;">Speed Knowledge Race</h1>
+    <div style="text-align:center;">
+        <div class="timer-box"><i class="fas fa-hourglass-half"></i> <span id="totalTimerDisplay">00:00</span></div>
     </div>
     <div class="stats-bar">
-        <div class="question-counter"><i class="fas fa-question-circle"></i> Question <span id="currentQNumber">1</span> / <span id="totalQ">10</span></div>
-        <div class="score-board"><i class="fas fa-star"></i> Score: <span id="scoreValue">0</span> / <span id="maxScore">10</span></div>
+        <span>Question <span id="currentQNumber">1</span>/10</span>
+        <span>Score: <span id="scoreValue">0</span>/10</span>
     </div>
-    <div class="question-area" id="questionArea">
-        <div class="question-text" id="questionText">...</div>
-        <div class="options-grid" id="optionsContainer"></div>
-    </div>
-    <div class="action-area" id="actionArea">
-        <button class="next-btn" id="nextButton"><i class="fas fa-arrow-left"></i> Next Question</button>
-    </div>
-    <footer>⚡ Challenge: Fastest total time wins the prize ⚡</footer>
+    <div class="question-text" id="questionText">Loading...</div>
+    <div class="options-grid" id="optionsContainer"></div>
+    <button class="next-btn" id="nextButton">Next Question</button>
+    <div class="team-message">– Proudly | Mohammed Almomani | IEEE ANU</div>
 </div>
 
 <script>
-    // الأسئلة بالإنجليزية
+    // ⚠️ IMPORTANT: استبدل هذا الرابط برابط Google Apps Script الذي أنشأته ⚠️
+    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+
     const QUESTIONS = [
         { text: "Which of the following represents the correct syntax for defining a variable in C++?", options: ["int = x 5;", "int x = 5;", "x int = 5;", "5 = int x;"], correct: 1 },
         { text: "What is the main difference between compiled and interpreted languages?", options: ["There is no difference", "A compiler executes directly without translation", "A compiler converts to machine language before execution", "An interpreter is always faster"], correct: 2 },
@@ -411,36 +196,18 @@
     let quizStartTime = null, timerInterval = null, quizCompleted = false;
     let finalElapsedSeconds = 0;
 
-    const quizContainer = document.getElementById("quizApp");
-    const splash = document.getElementById("splashScreen");
-    const startBtn = document.getElementById("startBtn");
-    const nextButton = document.getElementById("nextButton");
-    const totalTimerDisplay = document.getElementById("totalTimerDisplay");
-    const currentQNumberSpan = document.getElementById("currentQNumber");
-    const totalQSpan = document.getElementById("totalQ");
-    const scoreValueSpan = document.getElementById("scoreValue");
-    const maxScoreSpan = document.getElementById("maxScore");
-    const questionTextEl = document.getElementById("questionText");
-    const optionsContainer = document.getElementById("optionsContainer");
-
     function updateTimerDisplay() {
         if (!quizStartTime || quizCompleted) return;
         const elapsed = (Date.now() - quizStartTime) / 1000;
         const minutes = Math.floor(elapsed / 60);
         const seconds = Math.floor(elapsed % 60);
-        totalTimerDisplay.innerText = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+        document.getElementById("totalTimerDisplay").innerText = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
     }
 
     function startGlobalTimer() {
         if (timerInterval) clearInterval(timerInterval);
         quizStartTime = Date.now();
         timerInterval = setInterval(() => { if (!quizCompleted) updateTimerDisplay(); }, 200);
-        updateTimerDisplay();
-    }
-
-    function getTotalElapsedSeconds() {
-        if (!quizStartTime) return 0;
-        return (Date.now() - quizStartTime) / 1000;
     }
 
     function computeScore() {
@@ -449,72 +216,44 @@
             if (userAnswers[i] !== null && userAnswers[i] === QUESTIONS[i].correct) newScore++;
         }
         score = newScore;
-        scoreValueSpan.innerText = score;
+        document.getElementById("scoreValue").innerText = score;
         return score;
     }
 
-    function applyAnswerFeedback(selectedIdx, isCorrect, correctIdx, optionCards) {
-        optionCards.forEach(card => card.classList.remove("correct-highlight", "wrong-highlight"));
-        const selectedCard = optionCards[selectedIdx];
-        if (isCorrect) selectedCard.classList.add("correct-highlight");
-        else {
-            selectedCard.classList.add("wrong-highlight");
-            const correctCard = optionCards[correctIdx];
-            if (correctCard && correctIdx !== selectedIdx) correctCard.classList.add("correct-highlight");
-        }
-    }
-
-    function disableOptions(disable) {
-        document.querySelectorAll(".option-card").forEach(opt => opt.style.pointerEvents = disable ? "none" : "auto");
-    }
-
     function showMessage(msg, bgColor) {
-        let toast = document.querySelector(".custom-toast");
-        if (toast) toast.remove();
-        toast = document.createElement("div");
-        toast.className = "custom-toast";
+        let toast = document.createElement("div");
         toast.innerText = msg;
-        toast.style.cssText = `position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; padding:0.8rem 1.5rem; border-radius:50px; z-index:9999; font-family:'Tajawal'; direction:ltr; text-align:center;`;
+        toast.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${bgColor}; padding:10px 20px; border-radius:30px; z-index:9999; color:white;`;
         document.body.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = "0"; setTimeout(() => toast.remove(), 500); }, 2000);
+        setTimeout(() => toast.remove(), 2000);
     }
 
     function loadQuestion() {
         quizLocked = false;
-        disableOptions(false);
-        document.querySelectorAll(".option-card").forEach(card => card.classList.remove("selected", "correct-highlight", "wrong-highlight"));
         const q = QUESTIONS[currentIndex];
-        questionTextEl.innerText = q.text;
+        document.getElementById("questionText").innerText = q.text;
         let html = "";
-        const prefixes = ["A", "B", "C", "D"];
-        q.options.forEach((opt, idx) => {
-            html += `<div class="option-card" data-opt-index="${idx}"><div class="option-prefix">${prefixes[idx]}</div><div class="option-text">${escapeHtml(opt)}</div></div>`;
+        ["A", "B", "C", "D"].forEach((prefix, idx) => {
+            html += `<div class="option-card" data-opt-index="${idx}"><strong>${prefix}</strong> ${q.options[idx]}</div>`;
         });
-        optionsContainer.innerHTML = html;
+        document.getElementById("optionsContainer").innerHTML = html;
         document.querySelectorAll(".option-card").forEach(div => {
             div.addEventListener("click", () => {
                 if (quizLocked) return;
                 const chosen = parseInt(div.dataset.optIndex);
-                if (userAnswers[currentIndex] !== null) { showMessage("You already answered this question!", "#ffaa66"); return; }
+                if (userAnswers[currentIndex] !== null) return;
                 const isCorrect = (chosen === q.correct);
                 userAnswers[currentIndex] = chosen;
                 computeScore();
-                const optDivs = document.querySelectorAll(".option-card");
-                applyAnswerFeedback(chosen, isCorrect, q.correct, optDivs);
-                optDivs.forEach(c => c.classList.remove("selected"));
-                div.classList.add("selected");
+                if (isCorrect) div.classList.add("correct-highlight");
+                else div.classList.add("wrong-highlight");
                 quizLocked = true;
-                disableOptions(true);
-                showMessage(isCorrect ? "✅ Correct! +1 point" : `❌ Wrong! Correct answer: ${q.options[q.correct]}`, isCorrect ? "#24a85c" : "#d94f4f");
+                showMessage(isCorrect ? "✅ Correct!" : `❌ Wrong! Correct: ${q.options[q.correct]}`, isCorrect ? "#24a85c" : "#d94f4f");
             });
         });
-        currentQNumberSpan.innerText = currentIndex + 1;
-        totalQSpan.innerText = QUESTIONS.length;
-        maxScoreSpan.innerText = QUESTIONS.length;
-        nextButton.innerHTML = (currentIndex === QUESTIONS.length - 1) ? '<i class="fas fa-trophy"></i> Finish Test' : '<i class="fas fa-arrow-left"></i> Next Question';
+        document.getElementById("currentQNumber").innerText = currentIndex + 1;
+        document.getElementById("nextButton").innerHTML = (currentIndex === 9) ? "Finish Test" : "Next Question";
     }
-
-    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
     function formatTime(seconds) {
         const mins = Math.floor(seconds / 60);
@@ -522,64 +261,58 @@
         return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
     }
 
-    // ======================== حفظ البيانات في Local Storage (حل بسيط ويعمل فوراً) ========================
-    function saveResultToLocalStorage() {
+    async function saveToGoogleSheets(name, timeSec, scorePoints) {
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, time: timeSec, score: scorePoints, date: new Date().toISOString() })
+            });
+            return true;
+        } catch(e) {
+            return false;
+        }
+    }
+
+    function saveResult() {
         finalElapsedSeconds = getTotalElapsedSeconds();
         if (timerInterval) clearInterval(timerInterval);
         quizCompleted = true;
         const finalScore = computeScore();
         
-        // إخفاء عناصر الاختبار
-        document.querySelector(".question-area").style.display = "none";
-        document.querySelector(".action-area").style.display = "none";
         document.querySelector(".stats-bar").style.display = "none";
-        document.querySelector(".timer-section").style.display = "none";
+        document.querySelector(".question-text").style.display = "none";
+        document.querySelector(".options-grid").style.display = "none";
+        document.getElementById("nextButton").style.display = "none";
         
-        // إنشاء بطاقة النتيجة
         const resultDiv = document.createElement("div");
         resultDiv.className = "result-card";
         resultDiv.innerHTML = `
-            <h2><i class="fas fa-chart-line"></i> Final Result</h2>
-            <div style="font-size:2rem; font-weight:800; background:#0ff; display:inline-block; padding:0.2rem 1.5rem; border-radius:60px; margin:0.5rem 0;">${finalScore} / 10</div>
+            <h2>Final Result</h2>
+            <div style="font-size:2rem; font-weight:800; background:cyan; display:inline-block; padding:0.2rem 1.5rem; border-radius:60px;">${finalScore} / 10</div>
             <p style="font-size:1.2rem; margin:1rem 0;">⏱️ Total Time: ${formatTime(finalElapsedSeconds)}</p>
             <div class="name-input-area">
-                <input type="text" id="participantName" placeholder="Enter your name" maxlength="30">
-                <button class="save-btn" id="saveResultBtn"><i class="fas fa-save"></i> Save Result</button>
+                <input type="text" id="participantName" placeholder="Enter your name">
+                <button class="save-btn" id="saveResultBtn">Save Result</button>
             </div>
             <div class="team-message">– Proudly | Mohammed Almomani | IEEE ANU</div>
         `;
         document.getElementById("quizApp").appendChild(resultDiv);
         
-        // حدث حفظ النتيجة
-        document.getElementById("saveResultBtn")?.addEventListener("click", () => {
+        document.getElementById("saveResultBtn")?.addEventListener("click", async () => {
             const name = document.getElementById("participantName").value.trim();
-            if (name === "") { 
-                showMessage("Please enter your name", "#ffaa66"); 
-                return; 
-            }
-            
-            // حفظ البيانات في Local Storage
-            const participants = JSON.parse(localStorage.getItem("quizParticipants") || "[]");
-            participants.push({
-                name: name,
-                time: finalElapsedSeconds,
-                score: finalScore,
-                date: new Date().toISOString()
-            });
-            localStorage.setItem("quizParticipants", JSON.stringify(participants));
-            
-            showMessage("✅ Your result has been saved successfully! 🎉", "#24a85c");
-            
-            // الانتظار ثم الانتقال إلى صفحة المتصدرين
-            setTimeout(() => { 
-                window.location.href = "leaderboard.html";
-            }, 1500);
+            if (name === "") { showMessage("Please enter your name", "#ffaa66"); return; }
+            showMessage("Saving...", "#0ff");
+            await saveToGoogleSheets(name, finalElapsedSeconds, finalScore);
+            showMessage("✅ Result saved globally! View leaderboard.", "#24a85c");
+            setTimeout(() => { window.location.href = "leaderboard.html"; }, 1500);
         });
     }
 
     function handleNext() {
-        if (userAnswers[currentIndex] === null) { showMessage("⚠️ Please select an answer first!", "#ffad86"); return; }
-        if (currentIndex === QUESTIONS.length - 1) saveResultToLocalStorage();
+        if (userAnswers[currentIndex] === null) { showMessage("Please select an answer!", "#ffad86"); return; }
+        if (currentIndex === 9) saveResult();
         else { currentIndex++; loadQuestion(); }
     }
 
@@ -592,22 +325,15 @@
         computeScore();
         loadQuestion();
         startGlobalTimer();
-        // إظهار العناصر مرة أخرى
-        document.querySelector(".question-area").style.display = "block";
-        document.querySelector(".action-area").style.display = "flex";
-        document.querySelector(".stats-bar").style.display = "flex";
-        document.querySelector(".timer-section").style.display = "block";
-        const oldResult = document.querySelector(".result-card");
-        if (oldResult) oldResult.remove();
     }
 
-    startBtn.addEventListener("click", () => {
-        splash.style.opacity = "0";
-        splash.style.visibility = "hidden";
-        quizContainer.classList.add("visible");
+    document.getElementById("startBtn").addEventListener("click", () => {
+        document.getElementById("splashScreen").style.opacity = "0";
+        setTimeout(() => { document.getElementById("splashScreen").style.display = "none"; }, 800);
+        document.querySelector(".quiz-container").style.display = "block";
         resetQuiz();
     });
-    nextButton.addEventListener("click", handleNext);
+    document.getElementById("nextButton").addEventListener("click", handleNext);
 </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - المتصدرين (خاص)</title>
+    <title>المتصدرين - IEEE ANU</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -23,27 +23,13 @@
             border-radius: 2rem;
             padding: 2rem;
             border: 1px solid cyan;
-            box-shadow: 0 0 30px rgba(0,255,255,0.2);
         }
-        h1 {
-            text-align: center;
-            font-size: 2rem;
-            background: linear-gradient(135deg, #0ff, #fff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 1rem;
-        }
-        .login-box {
-            text-align: center;
-            padding: 2rem;
-        }
+        h1 { text-align: center; color: cyan; margin-bottom: 1rem; }
+        .login-box { text-align: center; padding: 2rem; }
         .login-box input {
-            padding: 0.8rem 1.2rem;
+            padding: 0.8rem;
             border-radius: 60px;
             border: none;
-            font-family: 'Tajawal';
-            font-size: 1rem;
             width: 250px;
             text-align: center;
             margin: 1rem;
@@ -51,13 +37,12 @@
             color: white;
         }
         .login-btn {
-            background: #0ff;
+            background: cyan;
             border: none;
             padding: 0.8rem 2rem;
             border-radius: 60px;
-            font-weight: bold;
             cursor: pointer;
-            font-size: 1rem;
+            font-weight: bold;
         }
         .winner-card {
             background: linear-gradient(135deg, #ffd700, #ffaa00);
@@ -72,70 +57,21 @@
             from { box-shadow: 0 0 10px gold; }
             to { box-shadow: 0 0 30px gold; }
         }
-        .winner-name {
-            font-size: 2rem;
-            font-weight: 800;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        th, td {
-            padding: 0.8rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(0,255,255,0.3);
-        }
-        th {
-            background: #0ff;
-            color: #02212e;
-        }
+        .winner-name { font-size: 2rem; font-weight: 800; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.8rem; text-align: center; border-bottom: 1px solid rgba(0,255,255,0.3); }
+        th { background: cyan; color: #02212e; }
         .rank-1 { background: rgba(255,215,0,0.2); font-weight: bold; }
         .btn-back {
             display: block;
             width: fit-content;
             margin: 2rem auto 0;
-            background: #0ff;
+            background: cyan;
             padding: 0.8rem 2rem;
             border-radius: 60px;
             text-decoration: none;
             color: #02161f;
             font-weight: bold;
-            text-align: center;
-        }
-        .error-msg {
-            color: #ff8888;
-            text-align: center;
-            margin-top: 1rem;
-        }
-        .loading-msg {
-            text-align: center;
-            padding: 2rem;
-            color: cyan;
-        }
-        footer {
-            text-align: center;
-            margin-top: 2rem;
-            font-size: 0.8rem;
-            color: #8bcbdd;
-        }
-        .clear-btn {
-            background: #ff4444;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 60px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'Tajawal';
-            box-shadow: 0 0 10px rgba(255,0,0,0.5);
-            transition: 0.3s;
-            margin: 15px 0;
-        }
-        .clear-btn:hover {
-            transform: scale(1.02);
-            background: #ff0000;
-            box-shadow: 0 0 20px red;
         }
         .refresh-btn {
             background: #00aaff;
@@ -145,188 +81,96 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
-            font-family: 'Tajawal';
             margin: 15px 10px;
         }
-        .empty-msg {
-            text-align: center;
-            padding: 2rem;
-            color: #ffaa66;
-        }
-        .export-btn {
-            background: #00ff88;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 60px;
-            color: #02212e;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'Tajawal';
-            margin: 15px 10px;
-        }
-        .export-btn:hover {
-            transform: scale(1.02);
-            background: #00cc66;
-        }
+        .error-msg { color: #ff8888; text-align: center; margin-top: 1rem; }
+        .loading-msg { text-align: center; padding: 2rem; color: cyan; }
     </style>
 </head>
 <body>
-<div class="container" id="mainContainer">
+<div class="container">
     <div id="loginSection">
         <div class="login-box">
-            <h1><i class="fas fa-lock"></i> لوحة التحكم - خاصة</h1>
-            <p style="margin-bottom: 1rem;">هذه الصفحة مخصصة للمسؤول فقط</p>
-            <input type="password" id="passwordInput" placeholder="أدخل كلمة السر">
+            <h1><i class="fas fa-lock"></i> لوحة التحكم</h1>
+            <input type="password" id="passwordInput" placeholder="كلمة السر">
             <br>
-            <button class="login-btn" id="loginBtn"><i class="fas fa-unlock-alt"></i> دخول</button>
+            <button class="login-btn" id="loginBtn">دخول</button>
             <div id="errorMsg" class="error-msg"></div>
         </div>
     </div>
     <div id="leaderboardContent" style="display: none;">
-        <h1><i class="fas fa-trophy"></i> قائمة المتصدرين <i class="fas fa-clock"></i></h1>
-        <div id="winnerArea">
-            <div class="loading-msg">جاري تحميل البيانات...</div>
+        <h1><i class="fas fa-trophy"></i> قائمة المتصدرين</h1>
+        <div id="winnerArea"><div class="loading-msg">جاري تحميل البيانات...</div></div>
+        <div style="text-align: center;">
+            <button id="refreshDataBtn" class="refresh-btn"><i class="fas fa-sync-alt"></i> تحديث</button>
         </div>
-        
-        <div style="text-align: center; margin: 20px 0;">
-            <button id="refreshDataBtn" class="refresh-btn"><i class="fas fa-sync-alt"></i> تحديث البيانات</button>
-            <button id="exportDataBtn" class="export-btn"><i class="fas fa-download"></i> تصدير البيانات (JSON)</button>
-            <button id="clearDataBtn" class="clear-btn"><i class="fas fa-trash-alt"></i> مسح جميع المحاولات</button>
-        </div>
-
-        <h2><i class="fas fa-users"></i> جميع المشاركين</h2>
+        <h2>جميع المشاركين</h2>
         <div id="leaderboardTable"></div>
-        <a href="index.html" class="btn-back"><i class="fas fa-arrow-right"></i> العودة للاختبار</a>
-        <footer>أقل وقت يفوز بالجائزة الكبرى | Mohammed Almomani - IEEE ANU</footer>
+        <a href="index.html" class="btn-back">العودة للاختبار</a>
     </div>
 </div>
 
 <script>
-    const ADMIN_PASSWORD = "admin2025"; // كلمة المرور - يمكنك تغييرها
-    
-    // دالة لجلب البيانات من Local Storage
-    function fetchLeaderboardData() {
-        const participants = JSON.parse(localStorage.getItem("quizParticipants") || "[]");
-        return participants.sort((a, b) => a.time - b.time);
-    }
+    const ADMIN_PASSWORD = "admin2025";
+    // ⚠️ ضع معرف الورقة هنا (من رابط Google Sheets)
+    const SHEET_ID = "YOUR_SHEET_ID_HERE";
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
 
-    function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-    }
-
-    function formatDate(dateString) {
-        if (!dateString) return "-";
+    async function fetchData() {
         try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('ar-EG') + " " + date.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
-        } catch(e) {
-            return "-";
-        }
+            const res = await fetch(CSV_URL + "?t=" + new Date().getTime());
+            const csv = await res.text();
+            const rows = csv.split("\n").slice(1);
+            const participants = [];
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].trim() === "") continue;
+                const cols = rows[i].split(",");
+                if (cols.length >= 3) {
+                    let name = cols[0].replace(/^"|"$/g, '').trim();
+                    let time = parseFloat(cols[1]);
+                    let score = parseInt(cols[2]) || 0;
+                    if (!isNaN(time) && name) participants.push({ name, time, score });
+                }
+            }
+            return participants.sort((a,b) => a.time - b.time);
+        } catch(e) { return []; }
     }
 
-    function escapeHtml(str) {
-        if (!str) return "";
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+    function formatTime(sec) {
+        let m = Math.floor(sec / 60);
+        let s = Math.floor(sec % 60);
+        return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     }
 
-    function loadLeaderboard() {
+    async function loadLeaderboard() {
+        const participants = await fetchData();
         const winnerArea = document.getElementById("winnerArea");
-        const leaderboardTable = document.getElementById("leaderboardTable");
-        
-        const participants = fetchLeaderboardData();
-        
+        const tableDiv = document.getElementById("leaderboardTable");
         if (participants.length === 0) {
-            winnerArea.innerHTML = `<div class="empty-msg">📭 لا يوجد مشاركون حتى الآن. كن أول من يشارك!</div>`;
-            leaderboardTable.innerHTML = `<div class="empty-msg">لا توجد بيانات لعرضها</div>`;
+            winnerArea.innerHTML = "<div style='text-align:center;padding:2rem;'>لا يوجد مشاركون بعد</div>";
+            tableDiv.innerHTML = "<div style='text-align:center;padding:2rem;'>لا توجد بيانات</div>";
             return;
         }
-        
-        const winner = participants[0];
-        winnerArea.innerHTML = `
-            <div class="winner-card">
-                <i class="fas fa-crown" style="font-size:3rem;"></i>
-                <div class="winner-name">🏆 الفائز: ${escapeHtml(winner.name)} 🏆</div>
-                <div class="winner-time" style="font-size:1.5rem;">⏱️ الزمن: ${formatTime(winner.time)}</div>
-                <div style="margin-top:0.5rem;">⭐ النقاط: ${winner.score}/10 ⭐</div>
-                <div style="margin-top:1rem;">🎁 يحصل على جائزة: شهادة تقدير + قسيمة خصم 50% 🎁</div>
-            </div>
-        `;
-        
-        let tableHtml = `<table><th>#</th><th>الاسم</th><th>الزمن</th><th>النقاط</th><th>التاريخ</th></tr>`;
-        participants.forEach((p, idx) => {
-            let rankClass = (idx === 0) ? "rank-1" : "";
-            tableHtml += `<tr class="${rankClass}">
-                <td>${idx + 1}</td>
-                <td>${escapeHtml(p.name)}</td>
-                <td>${formatTime(p.time)}</td>
-                <td>${p.score}/10</td>
-                <td>${formatDate(p.date)}</td>
-            </table>`;
+        const w = participants[0];
+        winnerArea.innerHTML = `<div class="winner-card"><i class="fas fa-crown" style="font-size:3rem;"></i><div class="winner-name">🏆 الفائز: ${w.name} 🏆</div><div>⏱️ الزمن: ${formatTime(w.time)}</div><div>⭐ النقاط: ${w.score}/10 ⭐</div><div style="margin-top:1rem;">🎁 جائزة: شهادة + قسيمة خصم 50% 🎁</div></div>`;
+        let html = `<tr><th>#</th><th>الاسم</th><th>الزمن</th><th>النقاط</th>`;
+        participants.forEach((p, i) => {
+            html += `<tr class="${i===0?'rank-1':''}"><td>${i+1}</td><td>${p.name}</td><td>${formatTime(p.time)}</td><td>${p.score}/10</td></tr>`;
         });
-        tableHtml += `闭台`;
-        leaderboardTable.innerHTML = tableHtml;
+        html += `</table>`;
+        tableDiv.innerHTML = html;
     }
 
-    // تصدير البيانات إلى ملف JSON
-    function exportToJSON() {
-        const participants = JSON.parse(localStorage.getItem("quizParticipants") || "[]");
-        if (participants.length === 0) {
-            alert("لا توجد بيانات للتصدير!");
-            return;
-        }
-        const dataStr = JSON.stringify(participants, null, 2);
-        const blob = new Blob([dataStr], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `quiz_results_${new Date().toISOString().slice(0,19)}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        alert("✅ تم تصدير البيانات بنجاح!");
-    }
-
-    // مسح جميع البيانات
-    function clearAllData() {
-        if(confirm("⚠️ تحذير: سيتم حذف جميع المحاولات السابقة نهائياً. هل أنت متأكد؟")) {
-            localStorage.removeItem("quizParticipants");
-            alert("✅ تم مسح جميع البيانات!");
-            loadLeaderboard();
-        }
-    }
-
-    // زر تسجيل الدخول
-    document.getElementById("loginBtn").addEventListener("click", function() {
-        const password = document.getElementById("passwordInput").value;
-        if (password === ADMIN_PASSWORD) {
+    document.getElementById("loginBtn").onclick = () => {
+        if (document.getElementById("passwordInput").value === ADMIN_PASSWORD) {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("leaderboardContent").style.display = "block";
             loadLeaderboard();
         } else {
-            document.getElementById("errorMsg").innerHTML = "كلمة السر غير صحيحة! الوصول غير مسموح.";
+            document.getElementById("errorMsg").innerHTML = "كلمة السر غير صحيحة!";
         }
-    });
-    
-    // زر تحديث البيانات
-    document.getElementById("refreshDataBtn")?.addEventListener("click", function() {
-        loadLeaderboard();
-    });
-    
-    // زر تصدير البيانات
-    document.getElementById("exportDataBtn")?.addEventListener("click", function() {
-        exportToJSON();
-    });
-    
-    // زر مسح البيانات
-    document.getElementById("clearDataBtn")?.addEventListener("click", function() {
-        clearAllData();
-    });
+    };
+    document.getElementById("refreshDataBtn")?.addEventListener("click", loadLeaderboard);
 </script>
 </body>
 </html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>IEEE ANU | اختبار تقني احترافي</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: radial-gradient(circle at 10% 30%, #0a0f1e, #03070f);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* animated particles */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 40%, rgba(0, 255, 255, 0.15) 1.5px, transparent 1.5px),
+                radial-gradient(circle at 75% 85%, rgba(0, 255, 200, 0.12) 2px, transparent 2px);
+            background-size: 55px 55px, 80px 80px;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatBg 25s linear infinite;
+        }
+
+        @keyframes floatBg {
+            0% { background-position: 0 0, 0 0; }
+            100% { background-position: 120px 120px, 200px 200px; }
+        }
+
+        /* splash screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #010a14, #021e2a);
+            backdrop-filter: blur(2px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease, visibility 0.8s;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .ieee-card {
+            text-align: center;
+            background: rgba(0, 30, 45, 0.6);
+            padding: 3rem 4rem;
+            border-radius: 4rem;
+            backdrop-filter: blur(16px);
+            border: 2px solid rgba(0, 255, 255, 0.6);
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+            animation: neonPulse 2s infinite alternate, floatGlow 3s infinite ease-in-out;
+        }
+
+        @keyframes neonPulse {
+            0% { border-color: rgba(0, 255, 255, 0.4); box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); }
+            100% { border-color: rgba(0, 255, 255, 1); box-shadow: 0 0 45px rgba(0, 255, 255, 0.8); }
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-12px) scale(1.02); }
+            100% { transform: translateY(0px) scale(1); }
+        }
+
+        .ieee-text {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff, #0ff, #0ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: textFlicker 1.5s infinite alternate;
+        }
+
+        @keyframes textFlicker {
+            0% { opacity: 0.9; text-shadow: 0 0 2px cyan; }
+            100% { opacity: 1; text-shadow: 0 0 20px cyan; }
+        }
+
+        .sub-ieee {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #bbffff;
+            margin-top: 0.5rem;
+            background: rgba(0,0,0,0.6);
+            padding: 0.5rem 1.5rem;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+        }
+
+        .developer-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #aaffdd;
+            margin-top: 0.8rem;
+            background: rgba(0, 255, 255, 0.15);
+            display: inline-block;
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            border: 1px dashed #0ff;
+            letter-spacing: 1px;
+        }
+
+        .start-quiz-btn {
+            background: linear-gradient(95deg, #0ff, #0088aa);
+            border: none;
+            font-size: 1.7rem;
+            font-weight: bold;
+            padding: 1rem 2.8rem;
+            border-radius: 60px;
+            color: #02161f;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 2rem;
+            transition: 0.3s;
+            box-shadow: 0 0 20px cyan;
+            animation: bounceBtn 1.2s infinite;
+        }
+
+        .start-quiz-btn:hover {
+            transform: scale(1.07);
+            background: linear-gradient(95deg, #2af, #00bbdd);
+            box-shadow: 0 0 35px cyan;
+        }
+
+        @keyframes bounceBtn {
+            0%,100%{ transform: translateY(0); }
+            50%{ transform: translateY(-7px); }
+        }
+
+        /* main quiz container */
+        .quiz-container {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(10, 25, 35, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 255, 255, 0.4);
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.96);
+            visibility: hidden;
+            transition: opacity 0.6s ease, visibility 0s linear 0.6s, transform 0.5s;
+        }
+
+        .quiz-container.visible {
+            opacity: 1;
+            transform: scale(1);
+            visibility: visible;
+            transition: opacity 0.6s ease, visibility 0s linear 0s, transform 0.5s;
+        }
+
+        .quiz-header {
+            background: linear-gradient(120deg, #0b2b38, #041a24);
+            padding: 1.8rem 2rem;
+            text-align: center;
+            border-bottom: 3px solid #0ff;
+        }
+
+        .quiz-header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #aaffff, #0ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.8rem 2rem;
+            color: #e0f2fe;
+            font-weight: bold;
+        }
+
+        .question-counter, .score-board {
+            background: #00000070;
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+        }
+
+        .question-area {
+            padding: 2rem 2rem 1rem;
+        }
+
+        .question-text {
+            background: rgba(0, 15, 25, 0.7);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-right: 8px solid #0ff;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #f0fcff;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-card {
+            background: rgba(15, 40, 55, 0.85);
+            backdrop-filter: blur(5px);
+            border-radius: 2rem;
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.25s ease;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(30, 80, 110, 0.95);
+            border-color: #0ff;
+        }
+
+        .option-prefix {
+            width: 42px;
+            height: 42px;
+            background: #0ff;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.3rem;
+            margin-left: 1rem;
+            color: #022b36;
+        }
+
+        .option-text {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #f2faff;
+            flex: 1;
+        }
+
+        .option-card.selected {
+            background: linear-gradient(145deg, #0e6b5e, #06473f);
+            border: 2px solid #0ff;
+            box-shadow: 0 0 18px rgba(0, 255, 255, 0.6);
+        }
+
+        .option-card.correct-highlight {
+            background: #0f7b3a;
+            border: 2px solid #a0ffa0;
+            animation: pulseGreen 0.5s ease;
+        }
+
+        .option-card.wrong-highlight {
+            background: #ac2f3a;
+            border: 2px solid #ffb0a8;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes pulseGreen {
+            0% { transform: scale(1); background: #0f7b3a; }
+            50% { transform: scale(1.02); background: #2bbd5a; box-shadow: 0 0 0 8px rgba(100,255,100,0.4);}
+            100% { transform: scale(1); background: #0f7b3a; }
+        }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .action-area {
+            padding: 0 2rem 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .next-btn, .restart-btn {
+            background: linear-gradient(95deg, #0ff, #00a3cc);
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 60px;
+            color: #02161f;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+            max-width: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .next-btn:hover, .restart-btn:hover {
+            background: linear-gradient(95deg, #2af, #0099cc);
+            letter-spacing: 1px;
+        }
+
+        /* result card with team message */
+        .result-card {
+            background: rgba(0, 25, 35, 0.95);
+            backdrop-filter: blur(18px);
+            margin: 1rem 2rem 2rem;
+            border-radius: 2rem;
+            padding: 1.8rem;
+            text-align: center;
+            color: #caffff;
+            border: 2px solid cyan;
+            animation: bounceIn 0.7s;
+        }
+
+        .result-stats {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: #0ff;
+            display: inline-block;
+            padding: 0.2rem 1.8rem;
+            border-radius: 60px;
+            color: #02212e;
+        }
+
+        .team-message {
+            margin-top: 1.8rem;
+            padding: 1rem;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 2rem;
+            border-right: 4px solid #0ff;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #e0ffff;
+            animation: glowPulse 1.5s infinite alternate;
+        }
+
+        @keyframes glowPulse {
+            0% { text-shadow: 0 0 2px cyan; border-right-color: #0ff; }
+            100% { text-shadow: 0 0 10px cyan; border-right-color: #ffffff; }
+        }
+
+        .team-message i {
+            margin-left: 10px;
+            color: #0ff;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.8rem;
+            color: #8bcbdd;
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.7);}
+            60% { opacity: 1; transform: scale(1.03);}
+            100% { transform: scale(1);}
+        }
+    </style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div class="splash-screen" id="splashScreen">
+    <div class="ieee-card">
+        <div class="ieee-text">
+            <i class="fas fa-microchip"></i> IEEE ANU
+        </div>
+        <div class="sub-ieee">
+            تم الصنع من قبل IEEE ANU TEAM
+        </div>
+        <div class="developer-name">
+            <i class="fas fa-code"></i> Mohammed Almomani
+        </div>
+        <button class="start-quiz-btn" id="startBtn">
+            <i class="fas fa-play"></i> ابدأ الاختبار
+        </button>
+    </div>
+</div>
+
+<!-- MAIN QUIZ CONTAINER -->
+<div class="quiz-container" id="quizApp">
+    <div class="quiz-header">
+        <h1><i class="fas fa-laptop-code"></i> اختبار المحترفين</h1>
+        <p>برمجة C++ | أمن سيبراني | ذكاء اصطناعي – 10 أسئلة قوية</p>
+    </div>
+    <div class="stats-bar">
+        <div class="question-counter"><i class="fas fa-question-circle"></i> السؤال <span id="currentQNumber">1</span> / <span id="totalQ">10</span></div>
+        <div class="score-board"><i class="fas fa-star"></i> النقاط: <span id="scoreValue">0</span> / <span id="maxScore">10</span></div>
+    </div>
+    <div class="question-area" id="questionArea">
+        <div class="question-text" id="questionText">جاري تحميل الأسئلة...</div>
+        <div class="options-grid" id="optionsContainer"></div>
+    </div>
+    <div class="action-area" id="actionArea">
+        <button class="next-btn" id="nextButton"><i class="fas fa-arrow-left"></i> السؤال التالي</button>
+    </div>
+    <footer>✨ اختر الإجابة بدقة – إعداد Mohammed Almomani | IEEE ANU ✨</footer>
+</div>
+
+<script>
+    // 10 أسئلة محترفة
+    const QUESTIONS = [
+        { text: "أي من التالي يمثل الصيغة الصحيحة لتعريف متغير في C++؟", options: ["int = x 5;", "int x = 5;", "x int = 5;", "5 = int x;"], correct: 1 },
+        { text: "ما الفرق الأساسي بين Compiled و Interpreted Languages؟", options: ["لا يوجد فرق", "المترجمة تُنفذ مباشرة بدون ترجمة", "المترجمة تُحوّل إلى لغة آلة قبل التنفيذ", "المفسرة أسرع دائمًا"], correct: 2 },
+        { text: "أي من التالي مثال على لغة مفسّرة؟", options: ["C++", "Java", "Python", "C"], correct: 2 },
+        { text: "أي من التالي يمثل حلقة تكرار صحيحة في C++؟", options: ["for i = 0 to 10", "for (int i = 0; i < 10; i++)", "for i in range(10)", "loop (i < 10)"], correct: 1 },
+        { text: "أي من التالي يُعتبر نوع من أنواع Malware؟", options: ["Firewall", "Antivirus", "Trojan", "VPN"], correct: 2 },
+        { text: "ما هو Phishing؟", options: ["هجوم عبر الشبكة الداخلية", "محاولة خداع المستخدم للحصول على معلومات حساسة", "تسريع الإنترنت", "تشفير البيانات"], correct: 1 },
+        { text: "ما هو Two-Factor Authentication (2FA)؟", options: ["استخدام كلمتي مرور", "طبقة حماية إضافية باستخدام وسيلتين للتحقق", "حذف الحساب", "تغيير كلمة المرور"], correct: 1 },
+        { text: "ما وظيفة Model في الذكاء الاصطناعي؟", options: ["عرض الصور", "تمثيل رياضي يتعلم من البيانات لاتخاذ قرارات أو تنبؤات", "تخزين البيانات", "تشغيل الجهاز"], correct: 1 },
+        { text: "ما هو Natural Language Processing (NLP)؟", options: ["معالجة الصور", "فهم ومعالجة اللغة البشرية بواسطة الحاسوب", "تحليل الشبكات", "تصميم الألعاب"], correct: 1 },
+        { text: "ما هو الذكاء الاصطناعي (AI)؟", options: ["تصميم مواقع", "قدرة الأنظمة على محاكاة الذكاء البشري", "تسريع الإنترنت", "تخزين البيانات"], correct: 1 }
+    ];
+
+    let currentIndex = 0;
+    let userAnswers = new Array(10).fill(null);
+    let score = 0;
+    let quizLocked = false;
+    let animationTimeout = null;
+
+    const quizContainer = document.getElementById("quizApp");
+    const splash = document.getElementById("splashScreen");
+    const startBtn = document.getElementById("startBtn");
+    const questionTextEl = document.getElementById("questionText");
+    const optionsContainer = document.getElementById("optionsContainer");
+    const nextButton = document.getElementById("nextButton");
+    const currentQNumberSpan = document.getElementById("currentQNumber");
+    const totalQSpan = document.getElementById("totalQ");
+    const scoreValueSpan = document.getElementById("scoreValue");
+    const maxScoreSpan = document.getElementById("maxScore");
+
+    startBtn.addEventListener("click", () => {
+        splash.style.opacity = "0";
+        splash.style.visibility = "hidden";
+        splash.style.pointerEvents = "none";
+        quizContainer.classList.add("visible");
+        resetQuizState();
+    });
+
+    function resetQuizState() {
+        currentIndex = 0;
+        userAnswers = new Array(10).fill(null);
+        score = 0;
+        quizLocked = false;
+        updateScoreUI();
+        loadQuestion();
+        const resultCard = document.querySelector(".result-card");
+        if (resultCard) resultCard.remove();
+        document.querySelector(".question-area").style.display = "block";
+        document.querySelector(".action-area").style.display = "flex";
+        document.querySelector(".stats-bar").style.display = "flex";
+    }
+
+    function updateScoreUI() { scoreValueSpan.innerText = score; }
+    function computeScore() {
+        let newScore = 0;
+        for (let i = 0; i < QUESTIONS.length; i++) {
+            if (userAnswers[i] !== null && userAnswers[i] === QUESTIONS[i].correct) newScore++;
+        }
+        score = newScore;
+        updateScoreUI();
+        return score;
+    }
+
+    function applyAnswerFeedback(selectedIdx, isCorrect, correctIdx, optionCards) {
+        optionCards.forEach(card => card.classList.remove("correct-highlight", "wrong-highlight"));
+        const selectedCard = optionCards[selectedIdx];
+        if (isCorrect) selectedCard.classList.add("correct-highlight");
+        else {
+            selectedCard.classList.add("wrong-highlight");
+            const correctCard = optionCards[correctIdx];
+            if (correctCard && correctIdx !== selectedIdx) correctCard.classList.add("correct-highlight");
+        }
+    }
+
+    function disableOptions(disable) {
+        document.querySelectorAll(".option-card").forEach(opt => opt.style.pointerEvents = disable ? "none" : "auto");
+    }
+
+    function showFloatyMessage(msg, bgColor) {
+        let oldToast = document.querySelector(".custom-toast");
+        if (oldToast) oldToast.remove();
+        let toast = document.createElement("div");
+        toast.className = "custom-toast";
+        toast.innerText = msg;
+        toast.style.cssText = `position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; font-weight:bold; padding:0.8rem 1.5rem; border-radius:50px; z-index:9999; backdrop-filter:blur(10px); font-family:'Tajawal'; font-size:1rem; border:1px solid cyan; direction:rtl;`;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = "0"; setTimeout(() => toast.remove(), 500); }, 2200);
+    }
+
+    function loadQuestion() {
+        if (animationTimeout) clearTimeout(animationTimeout);
+        quizLocked = false;
+        disableOptions(false);
+        document.querySelectorAll(".option-card").forEach(card => card.classList.remove("selected", "correct-highlight", "wrong-highlight"));
+        const q = QUESTIONS[currentIndex];
+        questionTextEl.innerText = q.text;
+        let html = "";
+        const prefixes = ["أ", "ب", "ج", "د"];
+        q.options.forEach((opt, idx) => {
+            const selectedClass = (userAnswers[currentIndex] === idx) ? "selected" : "";
+            html += `<div class="option-card ${selectedClass}" data-opt-index="${idx}"><div class="option-prefix">${prefixes[idx]}</div><div class="option-text">${escapeHtml(opt)}</div></div>`;
+        });
+        optionsContainer.innerHTML = html;
+        const optDivs = document.querySelectorAll(".option-card");
+        optDivs.forEach(div => {
+            div.addEventListener("click", () => {
+                if (quizLocked) return;
+                const chosen = parseInt(div.dataset.optIndex);
+                if (userAnswers[currentIndex] !== null) { showFloatyMessage("لقد أجبت مسبقاً!", "#ffaa66"); return; }
+                const isCorrect = (chosen === q.correct);
+                userAnswers[currentIndex] = chosen;
+                computeScore();
+                applyAnswerFeedback(chosen, isCorrect, q.correct, optDivs);
+                optDivs.forEach(c => c.classList.remove("selected"));
+                div.classList.add("selected");
+                quizLocked = true;
+                disableOptions(true);
+                showFloatyMessage(isCorrect ? "✅ إجابة صحيحة! +1 نقطة" : `❌ خطأ! الصحيح: ${q.options[q.correct]}`, isCorrect ? "#24a85c" : "#d94f4f");
+            });
+        });
+        currentQNumberSpan.innerText = currentIndex + 1;
+        totalQSpan.innerText = QUESTIONS.length;
+        maxScoreSpan.innerText = QUESTIONS.length;
+        nextButton.innerHTML = (currentIndex === QUESTIONS.length - 1) ? '<i class="fas fa-trophy"></i> عرض النتيجة' : '<i class="fas fa-arrow-left"></i> السؤال التالي';
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m) { if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    function handleNextOrResult() {
+        if (userAnswers[currentIndex] === null) { showFloatyMessage("⚠️ يرجى اختيار إجابة!", "#ffad86"); return; }
+        if (currentIndex === QUESTIONS.length - 1) displayFinalResult();
+        else { currentIndex++; loadQuestion(); }
+    }
+
+    function displayFinalResult() {
+        const finalScore = computeScore();
+        const total = QUESTIONS.length;
+        const percent = Math.round((finalScore / total) * 100);
+        let feedback = percent >= 80 ? "مذهل! ✅ مستوى خبير" : percent >= 60 ? "جيد جداً! 🚀" : percent >= 40 ? "لا بأس.. راجع المفيد 📘" : "تحتاج للمزيد 💪";
+        
+        const oldRes = document.querySelector(".result-card");
+        if (oldRes) oldRes.remove();
+        
+        const resultDiv = document.createElement("div");
+        resultDiv.innerHTML = `
+            <div class="result-card">
+                <h2><i class="fas fa-chart-line"></i> نتيجتك النهائية</h2>
+                <div class="result-stats">${finalScore} / ${total}</div>
+                <p style="font-size:1.3rem; margin-top:0.8rem;">📊 النسبة: ${percent}%</p>
+                <p style="background:#00000060; padding:0.5rem; border-radius:60px; margin:0.8rem 0;">${feedback}</p>
+                <div class="team-message">
+                    <i class="fas fa-heart"></i> 
+                    شكراً لك على المشاركة، نتمنى لك التوفيق دائماً
+                    <i class="fas fa-heart"></i><br>
+                    <span style="font-size:0.9rem; opacity:0.9;">– بكل فخر | Mohammed Almomani | IEEE ANU</span>
+                </div>
+                <button class="restart-btn" id="restartQuizBtn"><i class="fas fa-sync-alt"></i> إعادة الاختبار</button>
+            </div>
+        `;
+        const card = resultDiv.firstElementChild;
+        document.querySelector(".question-area").style.display = "none";
+        document.querySelector(".action-area").style.display = "none";
+        document.querySelector(".stats-bar").style.display = "none";
+        document.getElementById("quizApp").appendChild(card);
+        
+        document.getElementById("restartQuizBtn")?.addEventListener("click", () => {
+            window.location.reload();
+        });
+    }
+
+    nextButton.addEventListener("click", handleNextOrResult);
+</script>
+</body>
+</html>

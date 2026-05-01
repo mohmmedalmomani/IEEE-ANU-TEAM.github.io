@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>IEEE ANU | Futuristic Quiz Challenge | Cloud Database</title>
+    <title>IEEE ANU | Quiz Challenge | Cross-Device Sync</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -13,14 +13,14 @@
         .animated-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(125deg, #0a0a1a 0%, #0a0a2a 30%, #0a1a3a 60%, #0a0a1a 100%); background-size: 400% 400%; animation: gradientShift 15s ease infinite; }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; }
-        .glass-panel { background: rgba(10, 20, 40, 0.75); backdrop-filter: blur(16px); border-radius: 2rem; border: 1px solid rgba(0, 255, 255, 0.3); box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 200, 255, 0.15); transition: all 0.3s ease; }
+        .glass-panel { background: rgba(10, 20, 40, 0.75); backdrop-filter: blur(16px); border-radius: 2rem; border: 1px solid rgba(0, 255, 255, 0.3); box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 200, 255, 0.15); }
         .neon-btn { background: linear-gradient(135deg, #00c6ff, #0072ff); border: none; padding: 14px 42px; font-size: 1.1rem; font-weight: bold; border-radius: 60px; color: white; cursor: pointer; transition: 0.2s; box-shadow: 0 0 12px #00a6ff; }
         .neon-btn:hover { transform: scale(1.05); box-shadow: 0 0 28px #00e0ff; }
         .neon-btn-danger { background: linear-gradient(135deg, #ff416c, #ff4b2b); box-shadow: 0 0 12px #ff416c; }
         .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #05050f; display: flex; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; gap: 2rem; }
         .spinner { width: 70px; height: 70px; border: 4px solid rgba(0, 255, 255, 0.2); border-top: 4px solid #0ff; border-right: 4px solid #f0f; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .option { background: rgba(20, 30, 55, 0.9); margin: 0.8rem 0; padding: 1rem 1.2rem; border-radius: 1.5rem; cursor: pointer; transition: all 0.2s; border-left: 4px solid #0ff; font-weight: 500; }
+        .option { background: rgba(20, 30, 55, 0.9); margin: 0.8rem 0; padding: 1rem 1.2rem; border-radius: 1.5rem; cursor: pointer; transition: 0.2s; border-left: 4px solid #0ff; font-weight: 500; }
         .option:hover { background: #1e2a5e; transform: translateX(10px); }
         .correct-glow { box-shadow: 0 0 20px #0f0; background: rgba(0, 255, 0, 0.25); border-left-color: #0f0; }
         .wrong-glow { box-shadow: 0 0 20px #f00; background: rgba(255, 0, 0, 0.25); border-left-color: #f00; }
@@ -34,13 +34,14 @@
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         .fade-zoom { animation: fadeZoom 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
         @keyframes fadeZoom { from { opacity: 0; transform: scale(0.95); filter: blur(4px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
-        @media (max-width: 768px) { .leader-table th, .leader-table td { padding: 0.5rem; font-size: 0.8rem; } .neon-btn { padding: 10px 24px; font-size: 0.9rem; } }
+        @media (max-width: 768px) { .leader-table th, .leader-table td { padding: 0.5rem; font-size: 0.8rem; } .neon-btn { padding: 10px 24px; } }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
         .admin-input { background: rgba(15, 25, 45, 0.9); border: 1px solid #0ff; padding: 14px 20px; border-radius: 50px; color: white; width: 100%; font-size: 1rem; outline: none; }
         .admin-input:focus { box-shadow: 0 0 15px #0ff; }
         .online-badge { background: #00ff8844; border: 1px solid #0f8; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; margin-left: 10px; }
         .sync-status { position: fixed; top: 10px; right: 10px; background: #000000aa; border-radius: 20px; padding: 5px 12px; font-size: 0.7rem; z-index: 100; backdrop-filter: blur(5px); }
-        .cloud-icon { color: #0ff; margin-right: 5px; }
+        .config-panel { background: #1a1a3a; border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid #0ff; }
+        .config-input { background: #0a0a2a; border: 1px solid #0ff; padding: 8px 12px; border-radius: 8px; color: white; margin: 5px; width: 200px; }
     </style>
 </head>
 <body>
@@ -50,13 +51,13 @@
 
 <div class="loading-screen" id="loadingScreen">
     <div class="spinner"></div>
-    <h2 style="color:#0ff;">CONNECTING TO CLOUD DATABASE</h2>
-    <p style="color:#aaa;">Real-time sync across all devices...</p>
+    <h2 style="color:#0ff;">CONNECTING TO JSONBIN CLOUD</h2>
+    <p style="color:#aaa;">Please wait...</p>
 </div>
 
 <div id="appRoot" style="display: none;">
     <div class="sync-status" id="syncStatus">
-        <i class="fas fa-cloud-upload-alt cloud-icon"></i> <span id="syncText">Connected to Cloud</span>
+        <i class="fas fa-cloud-upload-alt"></i> <span id="syncText">Ready</span>
     </div>
 
     <!-- LANDING SECTION -->
@@ -65,7 +66,18 @@
             <i class="fas fa-globe" style="font-size: 3rem; color: #0ff; margin-bottom: 1rem;"></i>
             <h1 style="font-size: 3.5rem; background: linear-gradient(135deg, #aaffff, #7a4aff, #0ff); -webkit-background-clip: text; background-clip: text; color: transparent;">IEEE ANU TEAM</h1>
             <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.8;">DEVELOPED BY MOHAMMED ALMOMANI</p>
-            <div style="margin: 2rem 0;">
+            
+            <!-- Configuration Panel -->
+            <div class="config-panel" style="margin: 20px 0; text-align: left;">
+                <h4 style="color:#0ff; margin-bottom: 10px;"><i class="fas fa-key"></i> JSONBin.io Configuration (Required for Cross-Device Sync)</h4>
+                <p style="font-size: 12px; margin-bottom: 10px;">⚠️ Get your FREE API Key from <a href="https://jsonbin.io" target="_blank" style="color:#0ff;">jsonbin.io</a> → Sign up → Account Settings → API Keys</p>
+                <input type="text" id="binIdInput" class="config-input" placeholder="Bin ID" style="width: calc(50% - 10px);">
+                <input type="text" id="apiKeyInput" class="config-input" placeholder="API Key (X-Master-Key)" style="width: calc(50% - 10px);">
+                <button id="saveConfigBtn" style="background:#0ff; border:none; padding:8px 15px; border-radius:8px; margin-top:10px; cursor:pointer;">Save & Sync</button>
+                <p id="configStatus" style="font-size: 11px; margin-top: 8px; color: #ffaa00;"></p>
+            </div>
+            
+            <div style="margin: 1rem 0;">
                 <button id="startQuizBtn" class="neon-btn"><i class="fas fa-play"></i> START QUIZ <i class="fas fa-bolt"></i></button>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: center; font-size: 0.85rem;">
@@ -117,7 +129,7 @@
     <div id="adminPanel" style="display: none; padding: 1.5rem; min-height: 100vh;">
         <div class="glass-panel" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
-                <h2><i class="fas fa-shield-alt"></i> Admin Dashboard | <span style="color:#0ff;">GLOBAL REAL-TIME</span> <span class="online-badge"><i class="fas fa-circle" style="color:#0f0; font-size: 0.6rem;"></i> CLOUD SYNC</span></h2>
+                <h2><i class="fas fa-shield-alt"></i> Admin Dashboard | <span style="color:#0ff;">GLOBAL REAL-TIME</span> <span class="online-badge"><i class="fas fa-circle" style="color:#0f0; font-size: 0.6rem;"></i> JSONBin SYNC</span></h2>
                 <button id="closeAdminBtn" class="neon-btn" style="background: #333; padding: 10px 25px;">Exit Admin</button>
             </div>
             <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
@@ -127,17 +139,11 @@
             </div>
             <div style="overflow-x: auto;">
                 <table class="leader-table">
-                    <thead>
-                        <tr><th>#</th><th>Player Name</th><th>Score</th><th>Time (sec)</th><th>Time Format</th><th>Date</th></tr>
-                    </thead>
-                    <tbody id="leaderboardBody">
-                        <tr><td colspan="6" style="text-align: center;">📡 Loading global data...请稍等</td></tr>
-                    </tbody>
+                    <thead><tr><th>#</th><th>Player Name</th><th>Score</th><th>Time (sec)</th><th>Time Format</th><th>Date</th></tr></thead>
+                    <tbody id="leaderboardBody"><tr><td colspan="6" style="text-align: center;">📡 Loading global data...</td></tr></tbody>
                 </table>
             </div>
-            <div style="margin-top: 2rem;">
-                <canvas id="scoreChartCanvas" width="500" height="200" style="width:100%; max-width:500px; background: rgba(0,0,0,0.3); border-radius: 20px;"></canvas>
-            </div>
+            <div style="margin-top: 2rem;"><canvas id="scoreChartCanvas" width="500" height="200" style="width:100%; max-width:500px; background: rgba(0,0,0,0.3); border-radius: 20px;"></canvas></div>
         </div>
     </div>
 
@@ -147,155 +153,114 @@
 </div>
 
 <script>
-    // ======================== CLOUD DATABASE USING JSONBin.io (FREE & CROSS-DEVICE) ========================
-    // This is a PUBLIC bin that works across ALL devices
-    const BIN_ID = "67f4e8e28a456b7967e3c1a9"; // My public bin ID
-    const API_KEY = "$2a$10$YOUR_API_KEY_HERE"; // Demo key, will work with public bin
-    
-    // Alternative: Using a simple free API endpoint that works for cross-device
-    // We'll use localStorage with a sync server approach - but for true cross-device,
-    // let's create a shared Google Firebase Realtime Database alternative using a public service
-    
-    // Since JSONBin requires API key, I'll implement a simpler solution using a shared public endpoint
-    // Using a free mockAPI service that accepts GET/POST
-    
+    // ======================== JSONBin.io CLOUD STORAGE ========================
+    let BIN_ID = localStorage.getItem('jsonbin_id') || '';
+    let API_KEY = localStorage.getItem('jsonbin_key') || '';
     let leaderboardData = [];
     let autoRefreshInterval = null;
     
-    // Storage key for cloud sync using localStorage + BroadcastChannel
-    // For true cross-device, we'll use a public Google Sheets proxy or a simple Node server
-    // But to make it work immediately, I'll use a technique: store in localStorage AND sync via a shared iframe?
-    
-    // Instead, I'll create a simple mechanism using a free public API: myjson.com or类似的
-    // But those require API keys. Let me use a better approach: PouchDB + CouchDB? Too complex.
-    
-    // SIMPLE SOLUTION: Use a public Google Form? No.
-    // I'll implement a working solution using localStorage with a shared identifier and manual export/import?
-    
-    // ACTUAL WORKING CROSS-DEVICE: I'll use a public Firebase Realtime Database with open rules
-    // Here's a working Firebase config that accepts writes from anywhere:
-    
-    // Firebase configuration (Public test database -任何人都可以读写)
-    const firebaseConfig = {
-        apiKey: "AIzaSyD_9XqZxYzAbCdEfGhIjKlMnOpQrStUvWxYz",
-        authDomain: "ieee-anu-leaderboard.firebaseapp.com",
-        databaseURL: "https://ieee-anu-leaderboard-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "ieee-anu-leaderboard",
-        storageBucket: "ieee-anu-leaderboard.appspot.com",
-        messagingSenderId: "123456789012",
-        appId: "1:123456789012:web:abc123def456"
+    // Save config
+    document.getElementById('saveConfigBtn').onclick = () => {
+        BIN_ID = document.getElementById('binIdInput').value.trim();
+        API_KEY = document.getElementById('apiKeyInput').value.trim();
+        if (BIN_ID && API_KEY) {
+            localStorage.setItem('jsonbin_id', BIN_ID);
+            localStorage.setItem('jsonbin_key', API_KEY);
+            document.getElementById('configStatus').innerHTML = '✅ Configuration saved! Loading data...';
+            loadFromCloud();
+        } else {
+            document.getElementById('configStatus').innerHTML = '❌ Please enter both Bin ID and API Key';
+        }
     };
     
-    // Initialize Firebase if available, otherwise fallback to localStorage with cross-device via timestamp
-    let useFirebase = false;
-    let database = null;
+    // Load saved config on startup
+    if (BIN_ID) document.getElementById('binIdInput').value = BIN_ID;
+    if (API_KEY) document.getElementById('apiKeyInput').value = API_KEY;
     
-    // Try to load Firebase dynamically
-    function initFirebase() {
-        return new Promise((resolve) => {
-            if (typeof firebase !== 'undefined') {
-                try {
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(firebaseConfig);
-                    }
-                    database = firebase.database();
-                    useFirebase = true;
-                    console.log("Firebase initialized successfully!");
-                    resolve(true);
-                } catch(e) {
-                    console.warn("Firebase init failed:", e);
-                    resolve(false);
-                }
-            } else {
-                console.log("Firebase not loaded, using local sync");
-                resolve(false);
-            }
-        });
-    }
-    
-    // Load data from Firebase
+    // Load data from JSONBin
     async function loadFromCloud() {
-        if (useFirebase && database) {
-            try {
-                const snapshot = await database.ref('leaderboard').once('value');
-                const data = snapshot.val();
-                if (data) {
-                    leaderboardData = Object.values(data);
-                    renderLeaderboard();
-                    updateSyncStatus(true);
-                    return;
-                }
-            } catch(e) { console.warn(e); }
+        if (!BIN_ID || !API_KEY) {
+            console.log("No JSONBin config yet");
+            updateSyncStatus(false, "Configure JSONBin");
+            return false;
         }
-        // Fallback to localStorage with cross-tab broadcast
-        const stored = localStorage.getItem('ieee_cloud_leaderboard');
-        if (stored) {
-            leaderboardData = JSON.parse(stored);
-        } else {
-            leaderboardData = [];
-        }
-        renderLeaderboard();
-        updateSyncStatus(true);
-    }
-    
-    // Save to cloud
-    async function saveToCloud() {
-        if (useFirebase && database) {
-            try {
-                // Convert to object for Firebase
-                const obj = {};
-                leaderboardData.forEach(item => { obj[item.id] = item; });
-                await database.ref('leaderboard').set(obj);
-                console.log("Saved to Firebase cloud");
-                updateSyncStatus(true);
-                return;
-            } catch(e) { console.warn(e); }
-        }
-        // Fallback to localStorage
-        localStorage.setItem('ieee_cloud_leaderboard', JSON.stringify(leaderboardData));
-        // Broadcast to other tabs
-        if (window.BroadcastChannel) {
-            const channel = new BroadcastChannel('ieee_sync');
-            channel.postMessage({ type: 'UPDATE', data: leaderboardData });
-            channel.close();
-        }
-        updateSyncStatus(true);
-    }
-    
-    // Listen for cross-tab updates
-    if (window.BroadcastChannel) {
-        const channel = new BroadcastChannel('ieee_sync');
-        channel.onmessage = (event) => {
-            if (event.data.type === 'UPDATE') {
-                leaderboardData = event.data.data;
-                renderLeaderboard();
-                updateSyncStatus(true);
+        
+        try {
+            updateSyncStatus(false, "Loading...");
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': API_KEY }
+            });
+            
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            
+            if (data.record && data.record.leaderboard) {
+                leaderboardData = data.record.leaderboard;
+            } else if (data.record && Array.isArray(data.record)) {
+                leaderboardData = data.record;
+            } else {
+                leaderboardData = [];
             }
-        };
+            
+            renderLeaderboard();
+            updateSyncStatus(true, "Synced");
+            return true;
+        } catch(e) {
+            console.error("Load error:", e);
+            updateSyncStatus(false, "Error loading");
+            // Try localStorage as fallback
+            const local = localStorage.getItem('ieee_local_backup');
+            if (local) leaderboardData = JSON.parse(local);
+            renderLeaderboard();
+            return false;
+        }
     }
     
-    // Also listen for storage events
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'ieee_cloud_leaderboard' && e.newValue) {
-            leaderboardData = JSON.parse(e.newValue);
+    // Save data to JSONBin
+    async function saveToCloud() {
+        if (!BIN_ID || !API_KEY) {
+            // Save locally only
+            localStorage.setItem('ieee_local_backup', JSON.stringify(leaderboardData));
             renderLeaderboard();
-            updateSyncStatus(true);
+            updateSyncStatus(true, "Saved locally");
+            return false;
         }
-    });
+        
+        try {
+            updateSyncStatus(false, "Saving...");
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
+                },
+                body: JSON.stringify({ leaderboard: leaderboardData })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            updateSyncStatus(true, "Saved to cloud");
+            localStorage.setItem('ieee_local_backup', JSON.stringify(leaderboardData));
+            return true;
+        } catch(e) {
+            console.error("Save error:", e);
+            localStorage.setItem('ieee_local_backup', JSON.stringify(leaderboardData));
+            updateSyncStatus(false, "Saved locally only");
+            return false;
+        }
+    }
     
-    function updateSyncStatus(success) {
+    function updateSyncStatus(success, message) {
         const syncText = document.getElementById('syncText');
         if (syncText) {
-            syncText.innerHTML = success ? '🌐 Cloud Synced' : '🔄 Syncing...';
             if (success) {
-                setTimeout(() => {
-                    if (syncText) syncText.innerHTML = '🌐 Cloud Synced';
-                }, 2000);
+                syncText.innerHTML = `✅ ${message || 'Cloud Synced'}`;
+            } else {
+                syncText.innerHTML = `🔄 ${message || 'Syncing...'}`;
             }
         }
     }
     
-    // Add new score to cloud
+    // Add new score
     async function addScoreEntry(name, score, timeSec) {
         const newEntry = {
             id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
@@ -306,14 +271,12 @@
             dateString: new Date().toLocaleString()
         };
         leaderboardData.unshift(newEntry);
-        // Keep only latest 100
         if (leaderboardData.length > 100) leaderboardData = leaderboardData.slice(0, 100);
         await saveToCloud();
         showToast(`✅ ${name} added to global leaderboard!`);
         return newEntry;
     }
     
-    // Delete all from cloud
     async function deleteAllEntries() {
         if (confirm("⚠️ WARNING: This will DELETE ALL global leaderboard entries from ALL devices. Are you sure?")) {
             leaderboardData = [];
@@ -344,14 +307,13 @@
             const mins = Math.floor(entry.totalTime / 60);
             const secs = entry.totalTime % 60;
             const formattedTime = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            const dateDisplay = entry.dateString || new Date(entry.timestamp).toLocaleString();
             row.innerHTML = `
                 <td style="font-weight: bold; color: #0ff;">${idx + 1}</td>
                 <td><i class="fas fa-user-astronaut"></i> ${escapeHtml(entry.name)}</td>
                 <td><span style="color: #0ff; font-weight: bold;">${entry.score}/8</span> ⭐</td>
                 <td>${entry.totalTime} sec</td>
                 <td>${formattedTime}</td>
-                <td style="font-size: 0.8rem;">${dateDisplay}</td>
+                <td style="font-size: 0.8rem;">${entry.dateString || new Date(entry.timestamp).toLocaleString()}</td>
             `;
         });
         
@@ -575,7 +537,7 @@
                 document.getElementById('adminPanel').style.display = 'block';
                 await loadFromCloud();
                 if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-                autoRefreshInterval = setInterval(() => { loadFromCloud(); }, 3000);
+                autoRefreshInterval = setInterval(() => { loadFromCloud(); }, 5000);
             } else { alert("❌ Invalid password!"); }
         };
         document.getElementById('closeModalBtn').onclick = () => modal.remove();
@@ -590,7 +552,7 @@
     document.getElementById('deleteAllBtn').onclick = deleteAllEntries;
     document.getElementById('refreshNowBtn').onclick = () => { refreshData(); };
     
-    // Particles
+    // Particles background
     const canvas = document.getElementById('particleCanvas');
     const ctxPart = canvas.getContext('2d');
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -608,17 +570,9 @@
     setTimeout(async () => {
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('appRoot').style.display = 'block';
-        await initFirebase();
-        await loadFromCloud();
+        if (BIN_ID && API_KEY) await loadFromCloud();
         gsap.from('.glass-panel', { duration: 0.8, scale: 0.9, opacity: 0, y: 30, stagger: 0.1 });
-        
-        // Set up auto-sync every 5 seconds for cross-device
-        setInterval(async () => {
-            if (document.getElementById('adminPanel').style.display === 'block') {
-                await loadFromCloud();
-            }
-        }, 5000);
     }, 1500);
 </script>
 </body>
-</html>ر
+</html>

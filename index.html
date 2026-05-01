@@ -459,31 +459,6 @@ const TOTAL_QS = 10;
     }
     
     function playSound(correct) {
-       // 🧨 Explosion Effect
-function explosionEffect(element) {
-    for (let i = 0; i < 10; i++) {
-        const dot = document.createElement("div");
-        dot.style.position = "absolute";
-        dot.style.width = "6px";
-        dot.style.height = "6px";
-        dot.style.background = "#0f0";
-        dot.style.borderRadius = "50%";
-
-        const rect = element.getBoundingClientRect();
-        dot.style.left = rect.left + "px";
-        dot.style.top = rect.top + "px";
-
-        document.body.appendChild(dot);
-
-        gsap.to(dot, {
-            x: Math.random() * 100 - 50,
-            y: Math.random() * 100 - 50,
-            opacity: 0,
-            duration: 0.5,
-            onComplete: () => dot.remove()
-        });
-    }
-}
         try {
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = audioCtx.createOscillator();
@@ -612,24 +587,6 @@ function explosionEffect(element) {
         if (BIN_ID && API_KEY) await loadFromCloud();
         gsap.from('.glass-panel', { duration: 0.8, scale: 0.9, opacity: 0, y: 30, stagger: 0.1 });
     }, 1500);
-
-    // 🎨 Mouse Glow Effect
-document.addEventListener("mousemove", e => {
-    const glow = document.createElement("div");
-    glow.style.position = "fixed";
-    glow.style.left = e.clientX + "px";
-    glow.style.top = e.clientY + "px";
-    glow.style.width = "10px";
-    glow.style.height = "10px";
-    glow.style.background = "#0ff";
-    glow.style.borderRadius = "50%";
-    glow.style.pointerEvents = "none";
-    glow.style.opacity = "0.7";
-    glow.style.zIndex = "9999";
-    document.body.appendChild(glow);
-
-    setTimeout(() => glow.remove(), 300);
-});
 </script>
 </body>
 </html>

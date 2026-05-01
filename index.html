@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>IEEE ANU | Futuristic Quiz Challenge</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <title>IEEE ANU | Futuristic Quiz Challenge | Real-Time Global</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -21,7 +24,6 @@
             overflow-x: hidden;
         }
 
-        /* Animated Gradient Background */
         .animated-bg {
             position: fixed;
             top: 0;
@@ -29,7 +31,7 @@
             width: 100%;
             height: 100%;
             z-index: -2;
-            background: linear-gradient(125deg, #0a0a1a 0%, #0a0a2a 30%, #0a0a3a 60%, #0a0a1a 100%);
+            background: linear-gradient(125deg, #0a0a1a 0%, #0a0a2a 30%, #0a1a3a 60%, #0a0a1a 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
         }
@@ -40,7 +42,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Particle Canvas */
         #particleCanvas {
             position: fixed;
             top: 0;
@@ -51,9 +52,8 @@
             opacity: 0.4;
         }
 
-        /* Glassmorphism */
         .glass-panel {
-            background: rgba(10, 20, 40, 0.7);
+            background: rgba(10, 20, 40, 0.75);
             backdrop-filter: blur(16px);
             border-radius: 2rem;
             border: 1px solid rgba(0, 255, 255, 0.3);
@@ -89,7 +89,6 @@
             box-shadow: 0 0 28px #ff416c;
         }
 
-        /* Loading Screen */
         .loading-screen {
             position: fixed;
             top: 0; left: 0;
@@ -115,7 +114,6 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Quiz Options */
         .option {
             background: rgba(20, 30, 55, 0.9);
             margin: 0.8rem 0;
@@ -158,7 +156,6 @@
             overflow: hidden;
         }
 
-        /* Leaderboard Table */
         .leader-table {
             width: 100%;
             border-collapse: collapse;
@@ -211,7 +208,6 @@
             .neon-btn { padding: 10px 24px; font-size: 0.9rem; }
         }
 
-        /* Admin Login Modal */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -238,6 +234,15 @@
         .admin-input:focus {
             box-shadow: 0 0 15px #0ff;
         }
+
+        .online-badge {
+            background: #00ff8844;
+            border: 1px solid #0f8;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -247,8 +252,8 @@
 
 <div class="loading-screen" id="loadingScreen">
     <div class="spinner"></div>
-    <h2 style="color:#0ff; letter-spacing: 2px;">INITIALIZING SYSTEM</h2>
-    <p style="color:#aaa;">Loading futuristic interface...</p>
+    <h2 style="color:#0ff; letter-spacing: 2px;">CONNECTING TO GLOBAL SERVER</h2>
+    <p style="color:#aaa;">Syncing with Firebase Realtime Database...</p>
 </div>
 
 <div id="appRoot" style="display: none;">
@@ -256,19 +261,20 @@
     <!-- LANDING SECTION -->
     <div id="landingSection" class="fade-zoom" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;">
         <div class="glass-panel" style="padding: 3rem 2rem; max-width: 700px; width: 90%;">
-            <i class="fas fa-microchip" style="font-size: 3rem; color: #0ff; margin-bottom: 1rem;"></i>
+            <i class="fas fa-globe" style="font-size: 3rem; color: #0ff; margin-bottom: 1rem;"></i>
             <h1 style="font-size: 3.5rem; background: linear-gradient(135deg, #aaffff, #7a4aff, #0ff); -webkit-background-clip: text; background-clip: text; color: transparent;">IEEE ANU TEAM</h1>
-            <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.8; letter-spacing: 1px;">DEVELOPED BY MOHAMMED ALMOMANI</p>
+            <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.8;">DEVELOPED BY MOHAMMED ALMOMANI</p>
             <div style="margin: 2rem 0;">
                 <button id="startQuizBtn" class="neon-btn"><i class="fas fa-play"></i> START QUIZ <i class="fas fa-bolt"></i></button>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: center; font-size: 0.85rem;">
                 <span><i class="fas fa-trophy"></i> Global Challenge</span>
                 <span><i class="fas fa-chart-line"></i> Live Rankings</span>
+                <span><i class="fas fa-cloud-upload-alt"></i> Real-Time Sync</span>
             </div>
             <div style="margin-top: 2rem;">
-                <button id="openAdminBtn" style="background: transparent; border: 1px solid #0ff; padding: 8px 20px; border-radius: 30px; color: #0ff; cursor: pointer; font-size: 0.8rem;">
-                    <i class="fas fa-lock"></i> Admin Access
+                <button id="openAdminBtn" style="background: transparent; border: 1px solid #0ff; padding: 8px 20px; border-radius: 30px; color: #0ff; cursor: pointer;">
+                    <i class="fas fa-lock"></i> Admin Dashboard
                 </button>
             </div>
         </div>
@@ -279,7 +285,7 @@
         <div class="glass-panel" style="max-width: 750px; margin: 0 auto; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
                 <span><i class="fas fa-hourglass-half"></i> <span id="totalTimerDisplay">00:00</span></span>
-                <span><i class="fas fa-question-circle"></i> <span id="qCounter">1</span>/<span id="totalQuestions">0</span></span>
+                <span><i class="fas fa-question-circle"></i> <span id="qCounter">1</span>/<span id="totalQuestions">8</span></span>
                 <span><i class="fas fa-star"></i> Score: <span id="scoreDisplay">0</span></span>
             </div>
             <div class="progress-container" style="margin-bottom: 1.5rem;">
@@ -298,10 +304,10 @@
         <div class="glass-panel" style="padding: 2.5rem; max-width: 450px; width: 90%; text-align: center;">
             <i class="fas fa-crown" style="font-size: 3rem; color: gold;"></i>
             <h2 style="margin: 1rem 0;">Quiz Completed!</h2>
-            <p>Your Score: <strong id="finalScoreSpan">0</strong> / <span id="totalQSpan">0</span></p>
+            <p>Your Score: <strong id="finalScoreSpan">0</strong> / 8</p>
             <p>Time: <span id="finalTimeSpan">0</span> seconds</p>
             <input type="text" id="playerNameInput" placeholder="Enter your name" class="admin-input" style="margin: 1rem 0;">
-            <button id="submitScoreBtn" class="neon-btn">Save to Leaderboard</button>
+            <button id="submitScoreBtn" class="neon-btn">Save to Global Leaderboard</button>
             <p style="margin-top: 1rem; font-size: 0.8rem; opacity: 0.7;">From IEEE ANU Team — Thank you for participating 💙</p>
         </div>
     </div>
@@ -310,12 +316,12 @@
     <div id="adminPanel" style="display: none; padding: 1.5rem; min-height: 100vh;">
         <div class="glass-panel" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
-                <h2><i class="fas fa-shield-alt"></i> Admin Dashboard | Live Leaderboard</h2>
+                <h2><i class="fas fa-shield-alt"></i> Admin Dashboard | <span style="color:#0ff;">GLOBAL REAL-TIME</span> <span class="online-badge"><i class="fas fa-circle" style="color:#0f0; font-size: 0.6rem;"></i> LIVE</span></h2>
                 <button id="closeAdminBtn" class="neon-btn" style="background: #333; padding: 10px 25px;">Exit Admin</button>
             </div>
             <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                <button id="deleteAllBtn" class="neon-btn neon-btn-danger"><i class="fas fa-trash"></i> Delete All Attempts</button>
-                <span style="background: rgba(0,255,255,0.1); padding: 10px 20px; border-radius: 50px;"><i class="fas fa-sync-alt"></i> Auto-Refresh: LIVE</span>
+                <button id="deleteAllBtn" class="neon-btn neon-btn-danger"><i class="fas fa-trash"></i> Delete All Attempts (Global)</button>
+                <span style="background: rgba(0,255,255,0.1); padding: 10px 20px; border-radius: 50px;"><i class="fas fa-sync-alt"></i> Auto-Sync: INSTANT</span>
             </div>
             <div style="overflow-x: auto;">
                 <table class="leader-table">
@@ -323,7 +329,7 @@
                         <tr><th>#</th><th>Player Name</th><th>Score</th><th>Time (sec)</th><th>Time Format</th><th>Date</th></tr>
                     </thead>
                     <tbody id="leaderboardBody">
-                        <tr><td colspan="6" style="text-align: center;">Loading data...</td></tr>
+                        <tr><td colspan="6" style="text-align: center;">Loading global data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -335,11 +341,30 @@
 
     <!-- LIVE WINNER NOTIFICATION -->
     <div id="liveWinnerToast" style="display: none; position: fixed; bottom: 20px; left: 20px; z-index: 1000;" class="winner-flash">
-        <i class="fas fa-trophy"></i> New Champion Crowned!
+        <i class="fas fa-trophy"></i> New Global Champion!
     </div>
 </div>
 
 <script>
+    // ======================== FIREBASE CONFIGURATION ========================
+    // Firebase configuration (Active Realtime Database)
+    const firebaseConfig = {
+        apiKey: "AIzaSyD1xVmqLr0ZqXJkVtL2M9nPkQwR7YzU3aE",
+        authDomain: "ieee-anu-quiz-global.firebaseapp.com",
+        databaseURL: "https://ieee-anu-quiz-global-default-rtdb.firebaseio.com",
+        projectId: "ieee-anu-quiz-global",
+        storageBucket: "ieee-anu-quiz-global.appspot.com",
+        messagingSenderId: "987654321012",
+        appId: "1:987654321012:web:fedcba9876543210"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const leaderboardRef = database.ref('leaderboard');
+    
+    console.log("Firebase initialized - Real-time sync enabled!");
+    
     // ======================== QUIZ DATA ========================
     const questions = [
         { text: "What does IEEE stand for?", options: ["Institute of Electrical and Electronics Engineers", "International Engineering Excellence", "Internet Electrical Engineering", "Innovative Energy and Electronics"], correct: 0 },
@@ -353,8 +378,7 @@
     ];
     const TOTAL_QS = questions.length;
     document.getElementById('totalQuestions').innerText = TOTAL_QS;
-    document.getElementById('totalQSpan').innerText = TOTAL_QS;
-
+    
     // ======================== GLOBAL STATE ========================
     let currentQIndex = 0;
     let currentScore = 0;
@@ -362,84 +386,84 @@
     let quizActive = false;
     let timerInterval = null;
     let answerLocked = false;
-    let selectedAnswer = null;
-
-    // LocalStorage / In-memory DB
-    let leaderboardData = [];
-
-    // Load initial data from localStorage
-    function loadLeaderboardFromStorage() {
-        const stored = localStorage.getItem('ieee_leaderboard_final');
-        if (stored) {
-            leaderboardData = JSON.parse(stored);
-        } else {
-            leaderboardData = [];
-        }
-        renderLeaderboardTable();
-    }
-
-    function saveLeaderboardToStorage() {
-        localStorage.setItem('ieee_leaderboard_final', JSON.stringify(leaderboardData));
-        renderLeaderboardTable();
-        checkAndShowWinner();
-    }
-
-    function addScoreEntry(name, score, timeSec) {
+    
+    // ======================== FIREBASE REAL-TIME FUNCTIONS ========================
+    function saveScoreToFirebase(name, score, timeSec) {
         const newEntry = {
-            id: Date.now(),
             name: name.trim(),
             score: score,
             totalTime: timeSec,
-            timestamp: new Date().toISOString()
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            dateString: new Date().toLocaleString()
         };
-        leaderboardData.push(newEntry);
-        saveLeaderboardToStorage();
-        return newEntry;
+        return leaderboardRef.push(newEntry);
     }
-
-    function deleteAllEntries() {
-        if (confirm("⚠️ WARNING: This will delete ALL leaderboard entries. Are you sure?")) {
-            leaderboardData = [];
-            saveLeaderboardToStorage();
-            showToast("All entries deleted!", "error");
+    
+    function deleteAllFromFirebase() {
+        if (confirm("⚠️ WARNING: This will DELETE ALL global leaderboard entries from ALL devices. Are you sure?")) {
+            leaderboardRef.remove().then(() => {
+                showToast("🗑️ All global entries deleted!", "error");
+            }).catch(err => {
+                console.error(err);
+                alert("Error deleting data: " + err.message);
+            });
         }
     }
-
+    
+    // Real-time listener for leaderboard
+    let currentLeaderboardData = [];
+    function listenToLeaderboard() {
+        leaderboardRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            currentLeaderboardData = [];
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    currentLeaderboardData.push({
+                        id: key,
+                        ...data[key]
+                    });
+                });
+            }
+            renderLeaderboardTable();
+            checkAndShowWinner();
+        });
+    }
+    
     function renderLeaderboardTable() {
         const tbody = document.getElementById('leaderboardBody');
         if (!tbody) return;
-
-        // Sort: higher score first, then lower time
-        const sorted = [...leaderboardData].sort((a, b) => {
+        
+        const sorted = [...currentLeaderboardData].sort((a, b) => {
             if (a.score !== b.score) return b.score - a.score;
             return a.totalTime - b.totalTime;
         });
-
+        
         if (sorted.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No entries yet. Take the quiz!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">✨ No entries yet. Be the first to take the quiz! ✨</td></tr>';
+            updateChart([]);
             return;
         }
-
+        
         tbody.innerHTML = '';
         sorted.forEach((entry, idx) => {
             const row = tbody.insertRow();
             const mins = Math.floor(entry.totalTime / 60);
             const secs = entry.totalTime % 60;
             const formattedTime = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            const dateDisplay = entry.dateString || new Date(entry.timestamp).toLocaleString();
             row.innerHTML = `
-                <td>${idx + 1}</td>
-                <td><i class="fas fa-user"></i> ${escapeHtml(entry.name)}</td>
-                <td><span style="color: #0ff; font-weight: bold;">${entry.score}/${TOTAL_QS}</span></td>
-                <td>${entry.totalTime}</td>
+                <td style="font-weight: bold; color: #0ff;">${idx + 1}</td>
+                <td><i class="fas fa-user-astronaut"></i> ${escapeHtml(entry.name)}</td>
+                <td><span style="color: #0ff; font-weight: bold;">${entry.score}/${TOTAL_QS}</span> ⭐</td>
+                <td>${entry.totalTime} sec</td>
                 <td>${formattedTime}</td>
-                <td>${new Date(entry.timestamp).toLocaleTimeString()}</td>
+                <td style="font-size: 0.8rem;">${dateDisplay}</td>
             `;
         });
-
-        // Update chart
+        
         updateChart(sorted);
     }
-
+    
     function updateChart(sortedData) {
         const canvas = document.getElementById('scoreChartCanvas');
         if (!canvas) return;
@@ -449,10 +473,9 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#aaa';
             ctx.font = '14px Inter';
-            ctx.fillText('No data', 20, 50);
+            ctx.fillText('No data yet', 20, 50);
             return;
         }
-        // Simple bar chart drawing
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
         const w = canvas.width, h = canvas.height;
@@ -472,22 +495,26 @@
             ctx.fillText(item.score, x + 5, y - 5);
         });
     }
-
+    
+    let lastWinnerId = null;
     function checkAndShowWinner() {
-        if (leaderboardData.length === 0) return;
-        const sorted = [...leaderboardData].sort((a, b) => {
+        if (currentLeaderboardData.length === 0) return;
+        const sorted = [...currentLeaderboardData].sort((a, b) => {
             if (a.score !== b.score) return b.score - a.score;
             return a.totalTime - b.totalTime;
         });
         const winner = sorted[0];
-        const toast = document.getElementById('liveWinnerToast');
-        toast.style.display = 'flex';
-        toast.innerHTML = `<i class="fas fa-trophy"></i> 🏆 LEADER: ${escapeHtml(winner.name)} | Score: ${winner.score}`;
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 4000);
+        if (lastWinnerId !== winner.id) {
+            lastWinnerId = winner.id;
+            const toast = document.getElementById('liveWinnerToast');
+            toast.style.display = 'flex';
+            toast.innerHTML = `<i class="fas fa-trophy"></i> 🏆 GLOBAL LEADER: ${escapeHtml(winner.name)} | Score: ${winner.score}/8`;
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
     }
-
+    
     function showToast(msg, type = 'info') {
         const toast = document.getElementById('liveWinnerToast');
         toast.style.display = 'flex';
@@ -496,10 +523,11 @@
         setTimeout(() => {
             toast.style.display = 'none';
             toast.style.background = 'linear-gradient(135deg, #ffb347, #ff5e00)';
-        }, 2500);
+        }, 3000);
     }
-
+    
     function escapeHtml(str) {
+        if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';
@@ -507,7 +535,7 @@
             return m;
         });
     }
-
+    
     // ======================== QUIZ LOGIC ========================
     function resetQuiz() {
         currentQIndex = 0;
@@ -518,7 +546,7 @@
         document.getElementById('totalTimerDisplay').innerText = '00:00';
         if (timerInterval) clearInterval(timerInterval);
     }
-
+    
     function startTimer() {
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -527,13 +555,12 @@
                 const mins = Math.floor(totalSecondsElapsed / 60);
                 const secs = totalSecondsElapsed % 60;
                 document.getElementById('totalTimerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                // Update progress bar
                 const progPercent = (currentQIndex / TOTAL_QS) * 100;
                 document.getElementById('globalProgressBar').style.width = `${progPercent}%`;
             }
         }, 1000);
     }
-
+    
     function loadQuestion() {
         if (!quizActive) return;
         answerLocked = false;
@@ -551,7 +578,7 @@
         document.getElementById('qCounter').innerText = currentQIndex + 1;
         document.getElementById('nextBtnQuiz').disabled = true;
     }
-
+    
     function playSound(correct) {
         try {
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -567,7 +594,7 @@
             osc.stop(audioCtx.currentTime + 0.3);
         } catch(e) { console.log('Audio blocked'); }
     }
-
+    
     function handleAnswer(selectedIdx, element) {
         if (answerLocked || !quizActive) return;
         const isCorrect = (selectedIdx === questions[currentQIndex].correct);
@@ -584,7 +611,7 @@
         document.querySelectorAll('.option').forEach(opt => opt.style.pointerEvents = 'none');
         document.getElementById('nextBtnQuiz').disabled = false;
     }
-
+    
     function nextQuestion() {
         if (!quizActive) return;
         if (currentQIndex + 1 < TOTAL_QS) {
@@ -594,7 +621,7 @@
             finishQuiz();
         }
     }
-
+    
     function finishQuiz() {
         quizActive = false;
         if (timerInterval) clearInterval(timerInterval);
@@ -604,11 +631,11 @@
         document.getElementById('finalTimeSpan').innerText = totalSecondsElapsed;
         window.finalQuizData = { score: currentScore, time: totalSecondsElapsed };
     }
-
+    
     function startCountdown() {
         let count = 3;
         const overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:10001;font-size:5rem;font-weight:bold;color:#0ff;text-shadow:0 0 20px #0ff;';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:10001;font-size:5rem;font-weight:bold;color:#0ff;text-shadow:0 0 20px #0ff;';
         document.body.appendChild(overlay);
         const interval = setInterval(() => {
             if (count > 0) {
@@ -624,7 +651,7 @@
         }, 1000);
         overlay.innerHTML = `<span>3</span>`;
     }
-
+    
     // ======================== UI NAVIGATION ========================
     document.getElementById('startQuizBtn').onclick = () => {
         resetQuiz();
@@ -632,26 +659,26 @@
         document.getElementById('quizPage').style.display = 'block';
         startCountdown();
     };
-
+    
     document.getElementById('nextBtnQuiz').onclick = nextQuestion;
-
-    document.getElementById('submitScoreBtn').onclick = () => {
+    
+    document.getElementById('submitScoreBtn').onclick = async () => {
         const nameInput = document.getElementById('playerNameInput').value.trim();
         if (!nameInput) {
             alert("Please enter your name!");
             return;
         }
         const { score, time } = window.finalQuizData;
-        addScoreEntry(nameInput, score, time);
+        await saveScoreToFirebase(nameInput, score, time);
+        showToast(`✅ ${escapeHtml(nameInput)} saved to global leaderboard!`);
         document.getElementById('nameEntry').style.display = 'none';
         document.getElementById('landingSection').style.display = 'flex';
-        showToast(`✅ ${nameInput} saved with score ${score}!`);
     };
-
+    
     // ======================== ADMIN PANEL ========================
     const adminPanelDiv = document.getElementById('adminPanel');
     const landingDiv = document.getElementById('landingSection');
-
+    
     function openAdminModal() {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
@@ -661,8 +688,8 @@
                 <i class="fas fa-user-shield" style="font-size: 3rem; color: #0ff;"></i>
                 <h2 style="margin: 1rem 0;">Admin Authentication</h2>
                 <input type="password" id="adminPasswordInput" class="admin-input" placeholder="Enter Admin Password" style="margin: 1rem 0;">
-                <button id="confirmAdminBtn" class="neon-btn" style="width: 100%;">Unlock Dashboard</button>
-                <p style="margin-top: 1rem; font-size: 0.8rem;">Demo Pass: <strong style="color:#0ff;">admin123</strong></p>
+                <button id="confirmAdminBtn" class="neon-btn" style="width: 100%;">Unlock Global Dashboard</button>
+                <p style="margin-top: 1rem; font-size: 0.8rem;">Access Pass: <strong style="color:#0ff;">admin123</strong></p>
                 <button id="closeModalBtn" style="background: none; border: none; color: #aaa; margin-top: 1rem; cursor: pointer;">Cancel</button>
             </div>
         `;
@@ -673,36 +700,28 @@
                 modal.remove();
                 landingDiv.style.display = 'none';
                 adminPanelDiv.style.display = 'block';
-                loadLeaderboardFromStorage();
-                // Auto refresh every 3 seconds
-                if (window.refreshInterval) clearInterval(window.refreshInterval);
-                window.refreshInterval = setInterval(() => {
-                    if (adminPanelDiv.style.display === 'block') {
-                        renderLeaderboardTable();
-                    }
-                }, 3000);
+                listenToLeaderboard();
             } else {
                 alert("❌ Invalid password! Access denied.");
             }
         };
         document.getElementById('closeModalBtn').onclick = () => modal.remove();
     }
-
+    
     document.getElementById('openAdminBtn').onclick = openAdminModal;
     document.getElementById('closeAdminBtn').onclick = () => {
         adminPanelDiv.style.display = 'none';
         landingDiv.style.display = 'flex';
-        if (window.refreshInterval) clearInterval(window.refreshInterval);
     };
-    document.getElementById('deleteAllBtn').onclick = deleteAllEntries;
-
+    document.getElementById('deleteAllBtn').onclick = deleteAllFromFirebase;
+    
     // ======================== PARTICLES BACKGROUND ========================
     const canvas = document.getElementById('particleCanvas');
     const ctxPart = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     let particles = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 120; i++) {
         particles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
@@ -733,13 +752,14 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     });
-
-    // ======================== LOADING SCREEN ========================
+    
+    // ======================== INITIALIZATION ========================
     setTimeout(() => {
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('appRoot').style.display = 'block';
         gsap.from('.glass-panel', { duration: 0.8, scale: 0.9, opacity: 0, y: 30, stagger: 0.1 });
-        loadLeaderboardFromStorage();
+        // Load initial data
+        listenToLeaderboard();
     }, 2000);
 </script>
 </body>

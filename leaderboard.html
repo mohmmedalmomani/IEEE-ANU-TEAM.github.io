@@ -6,6 +6,9 @@
     <title>لوحة التحكم - المتصدرين (خاص)</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -148,6 +151,15 @@
             font-family: 'Tajawal';
             margin: 15px 10px;
         }
+        .live-badge {
+            background: #00ff00;
+            color: #02212e;
+            font-size: 0.7rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -163,7 +175,7 @@
         </div>
     </div>
     <div id="leaderboardContent" style="display: none;">
-        <h1><i class="fas fa-trophy"></i> قائمة المتصدرين <i class="fas fa-clock"></i></h1>
+        <h1><i class="fas fa-trophy"></i> قائمة المتصدرين <span class="live-badge"><i class="fas fa-circle" style="font-size:0.6rem;"></i> مباشر</span></h1>
         <div id="winnerArea">
             <div class="loading-msg">جاري تحميل البيانات...</div>
         </div>
@@ -181,51 +193,22 @@
 </div>
 
 <script>
-    const ADMIN_PASSWORD = "admin2025"; // كلمة المرور - يمكنك تغييرها
+    // 🔥 Firebase Configuration - نفس الإعدادات من index.html 🔥
+    const firebaseConfig = {
+        apiKey: "AIzaSyAWnexx5GRlVYyBrjuCM6RZRwxLQ4xOY-U",          // اكتب الـ API Key من Firebase Console
+        authDomain: "leee-arnu-quiz.firebaseapp.com",
+        projectId: "leee-arnu-quiz",
+        storageBucket: "leee-arnu-quiz.firebasestorage.app",
+        messagingSenderId: "418080244828",
+        appId: "1:418080244828:web:8b32a697340ba1c03751340"
+    };
     
-    // ⚠️ IMPORTANT: استبدل هذا الرابط برابط Google Sheets المنشور كـ CSV ⚠️
-    // يمكنك الحصول على هذا الرابط من: ملف Google Sheets -> مشاركة -> نسخ الرابط
-    // أو استخدم هذا التنسيق: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/gviz/tq?tqx=out:csv&sheet=Sheet1
-    const SHEET_ID = "10gsFRqZat3NByFp_mZQLP7VH6QM8AP410sFKQHzVhaU"; // <--- ضع معرف الورقة هنا
-    const SHEET_NAME = "Quiz_Results"; // اسم الورقة (غالباً Sheet1)
-    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
-
-    // دالة لجلب البيانات من Google Sheets
-    async function fetchLeaderboardData() {
-        try {
-            const response = await fetch(CSV_URL);
-            const csvText = await response.text();
-            const rows = csvText.split("\n");
-            
-            // تخطي الصف الأول (العناوين)
-            const participants = [];
-            for (let i = 1; i < rows.length; i++) {
-                if (rows[i].trim() === "") continue;
-                const cols = rows[i].split(",");
-                if (cols.length >= 3) {
-                    // تنظيف البيانات من علامات الاقتباس
-                    let name = cols[0].replace(/^"|"$/g, '').trim();
-                    let time = parseFloat(cols[1]);
-                    let score = parseInt(cols[2]) || 0;
-                    if (!isNaN(time) && name && name !== "") {
-                        participants.push({ name, time, score });
-                    }
-                }
-            }
-            return participants.sort((a, b) => a.time - b.time);
-        } catch(e) {
-            console.error("Error loading data:", e);
-            return [];
-        }
-    }
-
-    // دالة لحفظ البيانات في Google Sheets (للمسح)
-    async function clearAllData() {
-        // ملاحظة: مسح البيانات عبر الـ API يتطلب إعدادات إضافية
-        // بدلاً من ذلك، نعطي تعليمات للمسؤول بحذف البيانات يدوياً من الورقة
-        alert("لحذف جميع البيانات، يرجى فتح ورقة Google Sheets وحذف الصفوف يدوياً (ما عدا الصف الأول للعناوين).\n\nرابط الورقة: https://docs.google.com/spreadsheets/d/" + SHEET_ID);
-        return false;
-    }
+    // تهيئة Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    
+    const ADMIN_PASSWORD = "admin2025";
+    let unsubscribe = null;  // للاستماع المباشر للتحديثات
 
     function formatTime(seconds) {
         const mins = Math.floor(seconds / 60);
@@ -243,14 +226,9 @@
         });
     }
 
-    async function loadLeaderboard() {
+    function displayLeaderboard(participants) {
         const winnerArea = document.getElementById("winnerArea");
         const leaderboardTable = document.getElementById("leaderboardTable");
-        
-        winnerArea.innerHTML = `<div class="loading-msg"><i class="fas fa-spinner fa-pulse"></i> جاري تحميل البيانات...</div>`;
-        leaderboardTable.innerHTML = "";
-        
-        const participants = await fetchLeaderboardData();
         
         if (participants.length === 0) {
             winnerArea.innerHTML = `<div class="empty-msg" style="text-align:center; padding:2rem;">📭 لا يوجد مشاركون حتى الآن. كن أول من يشارك!</div>`;
@@ -264,11 +242,12 @@
                 <i class="fas fa-crown" style="font-size:3rem;"></i>
                 <div class="winner-name">🏆 الفائز: ${escapeHtml(winner.name)} 🏆</div>
                 <div class="winner-time" style="font-size:1.5rem;">⏱️ الزمن: ${formatTime(winner.time)}</div>
+                <div style="margin-top:0.5rem;">⭐ النقاط: ${winner.score}/10 ⭐</div>
                 <div style="margin-top:1rem;">🎁 يحصل على جائزة: شهادة تقدير + قسيمة خصم 50% 🎁</div>
             </div>
         `;
         
-        let tableHtml = `<table><th>#</th><th>الاسم</th><th>الزمن</th><th>النقاط</th></tr>`;
+        let tableHtml = `<table><th>#</th><th>الاسم</th><th>الزمن</th><th>النقاط</th>`;
         participants.forEach((p, idx) => {
             let rankClass = (idx === 0) ? "rank-1" : "";
             tableHtml += `<tr class="${rankClass}">
@@ -282,30 +261,69 @@
         leaderboardTable.innerHTML = tableHtml;
     }
 
+    // الاستماع المباشر للبيانات من Firebase (تحديث تلقائي)
+    function startRealtimeListener() {
+        if (unsubscribe) unsubscribe();
+        
+        unsubscribe = db.collection("quiz_results")
+            .orderBy("time", "asc")  // ترتيب حسب الوقت (الأسرع أولاً)
+            .onSnapshot((snapshot) => {
+                const participants = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.name && data.time !== undefined) {
+                        participants.push({
+                            name: data.name,
+                            time: data.time,
+                            score: data.score || 0
+                        });
+                    }
+                });
+                displayLeaderboard(participants);
+            }, (error) => {
+                console.error("Firebase error:", error);
+                document.getElementById("winnerArea").innerHTML = "<div style='text-align:center;padding:2rem;color:#ff8888;'>❌ خطأ في الاتصال بقاعدة البيانات</div>";
+            });
+    }
+
+    // مسح جميع البيانات من Firebase
+    async function clearAllData() {
+        if(confirm("⚠️ تحذير: سيتم حذف جميع المحاولات السابقة نهائياً. هل أنت متأكد؟")) {
+            try {
+                const snapshot = await db.collection("quiz_results").get();
+                const batch = db.batch();
+                snapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+                alert("✅ تم مسح جميع البيانات بنجاح!");
+            } catch(e) {
+                console.error("Error clearing data:", e);
+                alert("❌ حدث خطأ أثناء محاولة مسح البيانات");
+            }
+        }
+    }
+
     // زر تسجيل الدخول
-    document.getElementById("loginBtn").addEventListener("click", async function() {
+    document.getElementById("loginBtn").addEventListener("click", function() {
         const password = document.getElementById("passwordInput").value;
         if (password === ADMIN_PASSWORD) {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("leaderboardContent").style.display = "block";
-            await loadLeaderboard();
+            startRealtimeListener();  // بدء الاستماع المباشر
         } else {
             document.getElementById("errorMsg").innerHTML = "كلمة السر غير صحيحة! الوصول غير مسموح.";
         }
     });
     
-    // زر تحديث البيانات
-    document.getElementById("refreshDataBtn")?.addEventListener("click", async function() {
-        await loadLeaderboard();
+    // زر تحديث البيانات - يعيد الاتصال
+    document.getElementById("refreshDataBtn")?.addEventListener("click", function() {
+        startRealtimeListener();
     });
     
     // زر مسح البيانات
     document.getElementById("clearDataBtn")?.addEventListener("click", function() {
-        if(confirm("⚠️ تحذير: سيتم حذف جميع المحاولات السابقة من Google Sheets نهائياً.\n\nهل أنت متأكد؟")) {
-            // فتح الورقة في نافذة جديدة للمسح اليدوي
-            window.open(`https://docs.google.com/spreadsheets/d/${SHEET_ID}`, '_blank');
-            alert("✅ تم فتح ورقة البيانات.\n\nالرجاء حذف جميع الصفوف (ما عدا الصف الأول للعناوين) ثم اضغط 'تحديث البيانات'.");
-        }
+        clearAllData();
     });
 </script>
 </body>

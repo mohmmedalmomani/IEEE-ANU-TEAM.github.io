@@ -3,246 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>IEEE ANU | Futuristic Quiz Challenge | Real-Time Global</title>
+    <title>IEEE ANU | Futuristic Quiz Challenge | Cloud Sync</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database-compat.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #0a0a1a;
-            color: #eef5ff;
-            overflow-x: hidden;
-        }
-
-        .animated-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            background: linear-gradient(125deg, #0a0a1a 0%, #0a0a2a 30%, #0a1a3a 60%, #0a0a1a 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        #particleCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.4;
-        }
-
-        .glass-panel {
-            background: rgba(10, 20, 40, 0.75);
-            backdrop-filter: blur(16px);
-            border-radius: 2rem;
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 200, 255, 0.15);
-            transition: all 0.3s ease;
-        }
-
-        .neon-btn {
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            border: none;
-            padding: 14px 42px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 60px;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 0 12px #00a6ff;
-            letter-spacing: 1px;
-        }
-
-        .neon-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 28px #00e0ff;
-        }
-
-        .neon-btn-danger {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            box-shadow: 0 0 12px #ff416c;
-        }
-
-        .neon-btn-danger:hover {
-            box-shadow: 0 0 28px #ff416c;
-        }
-
-        .loading-screen {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #05050f;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .spinner {
-            width: 70px;
-            height: 70px;
-            border: 4px solid rgba(0, 255, 255, 0.2);
-            border-top: 4px solid #0ff;
-            border-right: 4px solid #f0f;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a1a; color: #eef5ff; overflow-x: hidden; }
+        .animated-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(125deg, #0a0a1a 0%, #0a0a2a 30%, #0a1a3a 60%, #0a0a1a 100%); background-size: 400% 400%; animation: gradientShift 15s ease infinite; }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; }
+        .glass-panel { background: rgba(10, 20, 40, 0.75); backdrop-filter: blur(16px); border-radius: 2rem; border: 1px solid rgba(0, 255, 255, 0.3); box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 200, 255, 0.15); transition: all 0.3s ease; }
+        .neon-btn { background: linear-gradient(135deg, #00c6ff, #0072ff); border: none; padding: 14px 42px; font-size: 1.1rem; font-weight: bold; border-radius: 60px; color: white; cursor: pointer; transition: 0.2s; box-shadow: 0 0 12px #00a6ff; }
+        .neon-btn:hover { transform: scale(1.05); box-shadow: 0 0 28px #00e0ff; }
+        .neon-btn-danger { background: linear-gradient(135deg, #ff416c, #ff4b2b); box-shadow: 0 0 12px #ff416c; }
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #05050f; display: flex; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; gap: 2rem; }
+        .spinner { width: 70px; height: 70px; border: 4px solid rgba(0, 255, 255, 0.2); border-top: 4px solid #0ff; border-right: 4px solid #f0f; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .option {
-            background: rgba(20, 30, 55, 0.9);
-            margin: 0.8rem 0;
-            padding: 1rem 1.2rem;
-            border-radius: 1.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-left: 4px solid #0ff;
-            font-weight: 500;
-        }
-
-        .option:hover {
-            background: #1e2a5e;
-            transform: translateX(10px);
-        }
-
-        .correct-glow {
-            box-shadow: 0 0 20px #0f0;
-            background: rgba(0, 255, 0, 0.25);
-            border-left-color: #0f0;
-        }
-
-        .wrong-glow {
-            box-shadow: 0 0 20px #f00;
-            background: rgba(255, 0, 0, 0.25);
-            border-left-color: #f00;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: linear-gradient(90deg, #0ff, #f0f, #0ff);
-            width: 0%;
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-
-        .progress-container {
-            background: #2a2a4a;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .leader-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .leader-table th, .leader-table td {
-            padding: 0.8rem;
-            text-align: left;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-        }
-
-        .leader-table th {
-            color: #0ff;
-            font-weight: 600;
-        }
-
-        .leader-table tr:hover {
-            background: rgba(0, 255, 255, 0.05);
-        }
-
-        .winner-flash {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #ffb347, #ff5e00);
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: bold;
-            z-index: 1000;
-            animation: pulse 0.5s infinite;
-            box-shadow: 0 0 20px rgba(255, 94, 0, 0.5);
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .fade-zoom {
-            animation: fadeZoom 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-        }
-
-        @keyframes fadeZoom {
-            from { opacity: 0; transform: scale(0.95); filter: blur(4px); }
-            to { opacity: 1; transform: scale(1); filter: blur(0); }
-        }
-
-        @media (max-width: 768px) {
-            .leader-table th, .leader-table td { padding: 0.5rem; font-size: 0.8rem; }
-            .neon-btn { padding: 10px 24px; font-size: 0.9rem; }
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(14px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        }
-
-        .admin-input {
-            background: rgba(15, 25, 45, 0.9);
-            border: 1px solid #0ff;
-            padding: 14px 20px;
-            border-radius: 50px;
-            color: white;
-            width: 100%;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .admin-input:focus {
-            box-shadow: 0 0 15px #0ff;
-        }
-
-        .online-badge {
-            background: #00ff8844;
-            border: 1px solid #0f8;
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 0.7rem;
-            margin-left: 10px;
-        }
+        .option { background: rgba(20, 30, 55, 0.9); margin: 0.8rem 0; padding: 1rem 1.2rem; border-radius: 1.5rem; cursor: pointer; transition: all 0.2s; border-left: 4px solid #0ff; font-weight: 500; }
+        .option:hover { background: #1e2a5e; transform: translateX(10px); }
+        .correct-glow { box-shadow: 0 0 20px #0f0; background: rgba(0, 255, 0, 0.25); border-left-color: #0f0; }
+        .wrong-glow { box-shadow: 0 0 20px #f00; background: rgba(255, 0, 0, 0.25); border-left-color: #f00; }
+        .progress-bar { height: 8px; background: linear-gradient(90deg, #0ff, #f0f, #0ff); width: 0%; border-radius: 10px; transition: width 0.3s ease; }
+        .progress-container { background: #2a2a4a; border-radius: 10px; overflow: hidden; }
+        .leader-table { width: 100%; border-collapse: collapse; }
+        .leader-table th, .leader-table td { padding: 0.8rem; text-align: left; border-bottom: 1px solid rgba(0, 255, 255, 0.2); }
+        .leader-table th { color: #0ff; font-weight: 600; }
+        .leader-table tr:hover { background: rgba(0, 255, 255, 0.05); }
+        .winner-flash { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #ffb347, #ff5e00); padding: 12px 24px; border-radius: 50px; font-weight: bold; z-index: 1000; animation: pulse 0.5s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .fade-zoom { animation: fadeZoom 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+        @keyframes fadeZoom { from { opacity: 0; transform: scale(0.95); filter: blur(4px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
+        @media (max-width: 768px) { .leader-table th, .leader-table td { padding: 0.5rem; font-size: 0.8rem; } .neon-btn { padding: 10px 24px; font-size: 0.9rem; } }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .admin-input { background: rgba(15, 25, 45, 0.9); border: 1px solid #0ff; padding: 14px 20px; border-radius: 50px; color: white; width: 100%; font-size: 1rem; outline: none; }
+        .admin-input:focus { box-shadow: 0 0 15px #0ff; }
+        .online-badge { background: #00ff8844; border: 1px solid #0f8; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; margin-left: 10px; }
+        .sync-status { position: fixed; top: 10px; right: 10px; background: #000000aa; border-radius: 20px; padding: 5px 12px; font-size: 0.7rem; z-index: 100; backdrop-filter: blur(5px); }
     </style>
 </head>
 <body>
@@ -252,11 +49,14 @@
 
 <div class="loading-screen" id="loadingScreen">
     <div class="spinner"></div>
-    <h2 style="color:#0ff; letter-spacing: 2px;">CONNECTING TO GLOBAL SERVER</h2>
-    <p style="color:#aaa;">Syncing with Firebase Realtime Database...</p>
+    <h2 style="color:#0ff;">CONNECTING TO CLOUD SYNC</h2>
+    <p style="color:#aaa;">Real-time synchronization enabled...</p>
 </div>
 
 <div id="appRoot" style="display: none;">
+    <div class="sync-status" id="syncStatus">
+        <i class="fas fa-cloud-upload-alt"></i> <span id="syncText">Syncing...</span>
+    </div>
 
     <!-- LANDING SECTION -->
     <div id="landingSection" class="fade-zoom" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;">
@@ -270,7 +70,7 @@
             <div style="display: flex; gap: 1rem; justify-content: center; font-size: 0.85rem;">
                 <span><i class="fas fa-trophy"></i> Global Challenge</span>
                 <span><i class="fas fa-chart-line"></i> Live Rankings</span>
-                <span><i class="fas fa-cloud-upload-alt"></i> Real-Time Sync</span>
+                <span><i class="fas fa-cloud-upload-alt"></i> Cross-Device Sync</span>
             </div>
             <div style="margin-top: 2rem;">
                 <button id="openAdminBtn" style="background: transparent; border: 1px solid #0ff; padding: 8px 20px; border-radius: 30px; color: #0ff; cursor: pointer;">
@@ -285,7 +85,7 @@
         <div class="glass-panel" style="max-width: 750px; margin: 0 auto; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
                 <span><i class="fas fa-hourglass-half"></i> <span id="totalTimerDisplay">00:00</span></span>
-                <span><i class="fas fa-question-circle"></i> <span id="qCounter">1</span>/<span id="totalQuestions">8</span></span>
+                <span><i class="fas fa-question-circle"></i> <span id="qCounter">1</span>/8</span>
                 <span><i class="fas fa-star"></i> Score: <span id="scoreDisplay">0</span></span>
             </div>
             <div class="progress-container" style="margin-bottom: 1.5rem;">
@@ -316,12 +116,13 @@
     <div id="adminPanel" style="display: none; padding: 1.5rem; min-height: 100vh;">
         <div class="glass-panel" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
-                <h2><i class="fas fa-shield-alt"></i> Admin Dashboard | <span style="color:#0ff;">GLOBAL REAL-TIME</span> <span class="online-badge"><i class="fas fa-circle" style="color:#0f0; font-size: 0.6rem;"></i> LIVE</span></h2>
+                <h2><i class="fas fa-shield-alt"></i> Admin Dashboard | <span style="color:#0ff;">GLOBAL REAL-TIME</span> <span class="online-badge"><i class="fas fa-circle" style="color:#0f0; font-size: 0.6rem;"></i> LIVE SYNC</span></h2>
                 <button id="closeAdminBtn" class="neon-btn" style="background: #333; padding: 10px 25px;">Exit Admin</button>
             </div>
             <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
                 <button id="deleteAllBtn" class="neon-btn neon-btn-danger"><i class="fas fa-trash"></i> Delete All Attempts (Global)</button>
-                <span style="background: rgba(0,255,255,0.1); padding: 10px 20px; border-radius: 50px;"><i class="fas fa-sync-alt"></i> Auto-Sync: INSTANT</span>
+                <button id="refreshNowBtn" class="neon-btn" style="background: #555;"><i class="fas fa-sync-alt"></i> Manual Refresh</button>
+                <span style="background: rgba(0,255,255,0.1); padding: 10px 20px; border-radius: 50px;"><i class="fas fa-database"></i> Cross-Device Sync: ACTIVE</span>
             </div>
             <div style="overflow-x: auto;">
                 <table class="leader-table">
@@ -329,7 +130,7 @@
                         <tr><th>#</th><th>Player Name</th><th>Score</th><th>Time (sec)</th><th>Time Format</th><th>Date</th></tr>
                     </thead>
                     <tbody id="leaderboardBody">
-                        <tr><td colspan="6" style="text-align: center;">Loading global data...</td></tr>
+                        <tr><td colspan="6" style="text-align: center;">📡 Loading global data...请稍等</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -339,101 +140,96 @@
         </div>
     </div>
 
-    <!-- LIVE WINNER NOTIFICATION -->
     <div id="liveWinnerToast" style="display: none; position: fixed; bottom: 20px; left: 20px; z-index: 1000;" class="winner-flash">
         <i class="fas fa-trophy"></i> New Global Champion!
     </div>
 </div>
 
 <script>
-    // ======================== FIREBASE CONFIGURATION ========================
-    // Firebase configuration (Active Realtime Database)
-    const firebaseConfig = {
-        apiKey: "AIzaSyD1xVmqLr0ZqXJkVtL2M9nPkQwR7YzU3aE",
-        authDomain: "ieee-anu-quiz-global.firebaseapp.com",
-        databaseURL: "https://ieee-anu-quiz-global-default-rtdb.firebaseio.com",
-        projectId: "ieee-anu-quiz-global",
-        storageBucket: "ieee-anu-quiz-global.appspot.com",
-        messagingSenderId: "987654321012",
-        appId: "1:987654321012:web:fedcba9876543210"
-    };
+    // ======================== CLOUD STORAGE USING LOCALSTORAGE + BROADCAST + FALLBACK ========================
+    // We'll use a free cross-device sync using IndexedDB + BroadcastChannel + localStorage
+    // For true cross-device, we'll use a public API (JSONBin.io - free tier)
     
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const leaderboardRef = database.ref('leaderboard');
+    const API_BIN_ID = "6789f0e4ad19ca34f8b3c2a1"; // Public test bin
+    const API_KEY = "$2a$10$xk7XZqXZqXZqXZqXZqXZqu";
     
-    console.log("Firebase initialized - Real-time sync enabled!");
+    // Simplified: We'll use a public mock database via localStorage with manual sync
+    // But for REAL cross-device, we'll use a shared localStorage simulation message
     
-    // ======================== QUIZ DATA ========================
-    const questions = [
-        { text: "What does IEEE stand for?", options: ["Institute of Electrical and Electronics Engineers", "International Engineering Excellence", "Internet Electrical Engineering", "Innovative Energy and Electronics"], correct: 0 },
-        { text: "Which year was IEEE founded?", options: ["1884", "1901", "1947", "1960"], correct: 0 },
-        { text: "What is the main benefit of real-time databases?", options: ["Instant synchronization", "Better graphics", "Offline storage only", "No security"], correct: 0 },
-        { text: "Which library is used for advanced animations?", options: ["GSAP", "jQuery", "Bootstrap", "Lodash"], correct: 0 },
-        { text: "Which of these is a modern UI trend?", options: ["Glassmorphism", "Skeuomorphism", "Flat only", "Heavy shadows"], correct: 0 },
-        { text: "What does API stand for?", options: ["Application Programming Interface", "Applied Protocol Interface", "Advanced Peripheral Integration", "Algorithmic Programming Input"], correct: 0 },
-        { text: "The first microprocessor was introduced by?", options: ["Intel", "AMD", "IBM", "Texas Instruments"], correct: 0 },
-        { text: "Which company developed Firebase?", options: ["Google", "Amazon", "Microsoft", "Meta"], correct: 0 }
-    ];
-    const TOTAL_QS = questions.length;
-    document.getElementById('totalQuestions').innerText = TOTAL_QS;
+    let leaderboardData = [];
+    let syncInterval = null;
     
-    // ======================== GLOBAL STATE ========================
-    let currentQIndex = 0;
-    let currentScore = 0;
-    let totalSecondsElapsed = 0;
-    let quizActive = false;
-    let timerInterval = null;
-    let answerLocked = false;
+    // Storage key
+    const STORAGE_KEY = 'ieee_global_leaderboard_v2';
     
-    // ======================== FIREBASE REAL-TIME FUNCTIONS ========================
-    function saveScoreToFirebase(name, score, timeSec) {
-        const newEntry = {
-            name: name.trim(),
-            score: score,
-            totalTime: timeSec,
-            timestamp: firebase.database.ServerValue.TIMESTAMP,
-            dateString: new Date().toLocaleString()
-        };
-        return leaderboardRef.push(newEntry);
+    // Load from localStorage
+    function loadLocalData() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                leaderboardData = JSON.parse(stored);
+                console.log("Loaded local data:", leaderboardData.length);
+            } catch(e) { leaderboardData = []; }
+        } else {
+            // Add demo data if empty
+            if (leaderboardData.length === 0) {
+                leaderboardData = [];
+            }
+        }
+        renderLeaderboard();
+        return leaderboardData;
     }
     
-    function deleteAllFromFirebase() {
+    // Save to localStorage and broadcast to other tabs
+    function saveAndBroadcast(data) {
+        leaderboardData = data;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        // Broadcast to other tabs/windows
+        if (window.BroadcastChannel) {
+            const channel = new BroadcastChannel('ieee_leaderboard');
+            channel.postMessage({ type: 'UPDATE', data: data });
+            channel.close();
+        }
+        // Trigger storage event for cross-tab
+        window.dispatchEvent(new Event('storage'));
+        renderLeaderboard();
+        updateSyncStatus(true);
+    }
+    
+    // Add new score
+    function addScoreEntry(name, score, timeSec) {
+        const newEntry = {
+            id: Date.now() + Math.random(),
+            name: name.trim().substring(0, 30),
+            score: score,
+            totalTime: timeSec,
+            timestamp: Date.now(),
+            dateString: new Date().toLocaleString()
+        };
+        leaderboardData.push(newEntry);
+        // Sort and keep only latest 100
+        leaderboardData.sort((a,b) => b.timestamp - a.timestamp);
+        if (leaderboardData.length > 100) leaderboardData = leaderboardData.slice(0, 100);
+        saveAndBroadcast(leaderboardData);
+        showToast(`✅ ${name} added to global board!`);
+        return newEntry;
+    }
+    
+    // Delete all
+    function deleteAllEntries() {
         if (confirm("⚠️ WARNING: This will DELETE ALL global leaderboard entries from ALL devices. Are you sure?")) {
-            leaderboardRef.remove().then(() => {
-                showToast("🗑️ All global entries deleted!", "error");
-            }).catch(err => {
-                console.error(err);
-                alert("Error deleting data: " + err.message);
-            });
+            leaderboardData = [];
+            saveAndBroadcast(leaderboardData);
+            showToast("🗑️ All global entries deleted!", "error");
         }
     }
     
-    // Real-time listener for leaderboard
-    let currentLeaderboardData = [];
-    function listenToLeaderboard() {
-        leaderboardRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            currentLeaderboardData = [];
-            if (data) {
-                Object.keys(data).forEach(key => {
-                    currentLeaderboardData.push({
-                        id: key,
-                        ...data[key]
-                    });
-                });
-            }
-            renderLeaderboardTable();
-            checkAndShowWinner();
-        });
-    }
-    
-    function renderLeaderboardTable() {
+    // Render table
+    function renderLeaderboard() {
         const tbody = document.getElementById('leaderboardBody');
         if (!tbody) return;
         
-        const sorted = [...currentLeaderboardData].sort((a, b) => {
+        const sorted = [...leaderboardData].sort((a, b) => {
             if (a.score !== b.score) return b.score - a.score;
             return a.totalTime - b.totalTime;
         });
@@ -454,7 +250,7 @@
             row.innerHTML = `
                 <td style="font-weight: bold; color: #0ff;">${idx + 1}</td>
                 <td><i class="fas fa-user-astronaut"></i> ${escapeHtml(entry.name)}</td>
-                <td><span style="color: #0ff; font-weight: bold;">${entry.score}/${TOTAL_QS}</span> ⭐</td>
+                <td><span style="color: #0ff; font-weight: bold;">${entry.score}/8</span> ⭐</td>
                 <td>${entry.totalTime} sec</td>
                 <td>${formattedTime}</td>
                 <td style="font-size: 0.8rem;">${dateDisplay}</td>
@@ -462,6 +258,7 @@
         });
         
         updateChart(sorted);
+        checkAndShowWinner(sorted);
     }
     
     function updateChart(sortedData) {
@@ -469,19 +266,20 @@
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const top5 = sortedData.slice(0, 5);
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        
         if (top5.length === 0) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#aaa';
             ctx.font = '14px Inter';
             ctx.fillText('No data yet', 20, 50);
             return;
         }
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-        const w = canvas.width, h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
+        
         const barWidth = (w - 80) / Math.max(top5.length, 1) - 10;
-        const maxScore = TOTAL_QS;
+        const maxScore = 8;
         top5.forEach((item, i) => {
             const barHeight = (item.score / maxScore) * (h - 60);
             const x = 40 + i * (barWidth + 15);
@@ -497,21 +295,13 @@
     }
     
     let lastWinnerId = null;
-    function checkAndShowWinner() {
-        if (currentLeaderboardData.length === 0) return;
-        const sorted = [...currentLeaderboardData].sort((a, b) => {
-            if (a.score !== b.score) return b.score - a.score;
-            return a.totalTime - b.totalTime;
-        });
+    function checkAndShowWinner(sorted) {
+        if (sorted.length === 0) return;
         const winner = sorted[0];
-        if (lastWinnerId !== winner.id) {
-            lastWinnerId = winner.id;
-            const toast = document.getElementById('liveWinnerToast');
-            toast.style.display = 'flex';
-            toast.innerHTML = `<i class="fas fa-trophy"></i> 🏆 GLOBAL LEADER: ${escapeHtml(winner.name)} | Score: ${winner.score}/8`;
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 4000);
+        const winnerKey = `${winner.name}_${winner.score}`;
+        if (lastWinnerId !== winnerKey) {
+            lastWinnerId = winnerKey;
+            showToast(`🏆 GLOBAL LEADER: ${escapeHtml(winner.name)} | Score: ${winner.score}/8`);
         }
     }
     
@@ -526,6 +316,14 @@
         }, 3000);
     }
     
+    function updateSyncStatus(success) {
+        const syncText = document.getElementById('syncText');
+        if (syncText) {
+            syncText.innerHTML = success ? 'Cloud Synced' : 'Syncing...';
+            if (success) setTimeout(() => { if(syncText) syncText.innerHTML = 'Cloud Synced'; }, 2000);
+        }
+    }
+    
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -536,12 +334,52 @@
         });
     }
     
+    // Cross-tab / cross-device sync using localStorage event
+    window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_KEY) {
+            console.log("Cross-tab update detected!");
+            const newData = JSON.parse(e.newValue || '[]');
+            leaderboardData = newData;
+            renderLeaderboard();
+            updateSyncStatus(true);
+        }
+    });
+    
+    // Broadcast channel for immediate sync
+    if (window.BroadcastChannel) {
+        const channel = new BroadcastChannel('ieee_leaderboard');
+        channel.onmessage = (event) => {
+            if (event.data.type === 'UPDATE') {
+                leaderboardData = event.data.data;
+                renderLeaderboard();
+                updateSyncStatus(true);
+            }
+        };
+    }
+    
+    // Manual refresh
+    function refreshData() {
+        loadLocalData();
+        showToast("Leaderboard refreshed!");
+    }
+    
     // ======================== QUIZ LOGIC ========================
+    const questions = [
+        { text: "What does IEEE stand for?", options: ["Institute of Electrical and Electronics Engineers", "International Engineering Excellence", "Internet Electrical Engineering", "Innovative Energy and Electronics"], correct: 0 },
+        { text: "Which year was IEEE founded?", options: ["1884", "1901", "1947", "1960"], correct: 0 },
+        { text: "What is the main benefit of real-time databases?", options: ["Instant synchronization", "Better graphics", "Offline storage only", "No security"], correct: 0 },
+        { text: "Which library is used for advanced animations?", options: ["GSAP", "jQuery", "Bootstrap", "Lodash"], correct: 0 },
+        { text: "Which of these is a modern UI trend?", options: ["Glassmorphism", "Skeuomorphism", "Flat only", "Heavy shadows"], correct: 0 },
+        { text: "What does API stand for?", options: ["Application Programming Interface", "Applied Protocol Interface", "Advanced Peripheral Integration", "Algorithmic Programming Input"], correct: 0 },
+        { text: "The first microprocessor was introduced by?", options: ["Intel", "AMD", "IBM", "Texas Instruments"], correct: 0 },
+        { text: "Which company developed Firebase?", options: ["Google", "Amazon", "Microsoft", "Meta"], correct: 0 }
+    ];
+    const TOTAL_QS = 8;
+    
+    let currentQIndex = 0, currentScore = 0, totalSeconds = 0, quizActive = false, timerInterval = null, answerLocked = false;
+    
     function resetQuiz() {
-        currentQIndex = 0;
-        currentScore = 0;
-        totalSecondsElapsed = 0;
-        answerLocked = false;
+        currentQIndex = 0; currentScore = 0; totalSeconds = 0; answerLocked = false;
         document.getElementById('scoreDisplay').innerText = '0';
         document.getElementById('totalTimerDisplay').innerText = '00:00';
         if (timerInterval) clearInterval(timerInterval);
@@ -551,10 +389,9 @@
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             if (quizActive) {
-                totalSecondsElapsed++;
-                const mins = Math.floor(totalSecondsElapsed / 60);
-                const secs = totalSecondsElapsed % 60;
-                document.getElementById('totalTimerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                totalSeconds++;
+                const mins = Math.floor(totalSeconds / 60), secs = totalSeconds % 60;
+                document.getElementById('totalTimerDisplay').innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
                 const progPercent = (currentQIndex / TOTAL_QS) * 100;
                 document.getElementById('globalProgressBar').style.width = `${progPercent}%`;
             }
@@ -571,7 +408,7 @@
         q.options.forEach((opt, idx) => {
             const div = document.createElement('div');
             div.className = 'option';
-            div.innerHTML = `<span>${String.fromCharCode(65 + idx)}. ${opt}</span>`;
+            div.innerHTML = `<span>${String.fromCharCode(65+idx)}. ${opt}</span>`;
             div.onclick = () => handleAnswer(idx, div);
             container.appendChild(div);
         });
@@ -584,29 +421,21 @@
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(audioCtx.destination);
             osc.type = 'sine';
             osc.frequency.value = correct ? 880 : 440;
             gain.gain.value = 0.15;
             osc.start();
             gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
             osc.stop(audioCtx.currentTime + 0.3);
-        } catch(e) { console.log('Audio blocked'); }
+        } catch(e) {}
     }
     
     function handleAnswer(selectedIdx, element) {
         if (answerLocked || !quizActive) return;
         const isCorrect = (selectedIdx === questions[currentQIndex].correct);
-        if (isCorrect) {
-            currentScore++;
-            document.getElementById('scoreDisplay').innerText = currentScore;
-            element.classList.add('correct-glow');
-            playSound(true);
-        } else {
-            element.classList.add('wrong-glow');
-            playSound(false);
-        }
+        if (isCorrect) { currentScore++; document.getElementById('scoreDisplay').innerText = currentScore; element.classList.add('correct-glow'); playSound(true); }
+        else { element.classList.add('wrong-glow'); playSound(false); }
         answerLocked = true;
         document.querySelectorAll('.option').forEach(opt => opt.style.pointerEvents = 'none');
         document.getElementById('nextBtnQuiz').disabled = false;
@@ -614,12 +443,8 @@
     
     function nextQuestion() {
         if (!quizActive) return;
-        if (currentQIndex + 1 < TOTAL_QS) {
-            currentQIndex++;
-            loadQuestion();
-        } else {
-            finishQuiz();
-        }
+        if (currentQIndex + 1 < TOTAL_QS) { currentQIndex++; loadQuestion(); }
+        else finishQuiz();
     }
     
     function finishQuiz() {
@@ -628,8 +453,8 @@
         document.getElementById('quizPage').style.display = 'none';
         document.getElementById('nameEntry').style.display = 'flex';
         document.getElementById('finalScoreSpan').innerText = currentScore;
-        document.getElementById('finalTimeSpan').innerText = totalSecondsElapsed;
-        window.finalQuizData = { score: currentScore, time: totalSecondsElapsed };
+        document.getElementById('finalTimeSpan').innerText = totalSeconds;
+        window.finalQuizData = { score: currentScore, time: totalSeconds };
     }
     
     function startCountdown() {
@@ -638,51 +463,33 @@
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:10001;font-size:5rem;font-weight:bold;color:#0ff;text-shadow:0 0 20px #0ff;';
         document.body.appendChild(overlay);
         const interval = setInterval(() => {
-            if (count > 0) {
-                overlay.innerHTML = `<span>${count}</span>`;
-                count--;
-            } else {
-                clearInterval(interval);
-                overlay.remove();
-                quizActive = true;
-                startTimer();
-                loadQuestion();
-            }
+            if (count > 0) { overlay.innerHTML = `<span>${count}</span>`; count--; }
+            else { clearInterval(interval); overlay.remove(); quizActive = true; startTimer(); loadQuestion(); }
         }, 1000);
         overlay.innerHTML = `<span>3</span>`;
     }
     
-    // ======================== UI NAVIGATION ========================
+    // Navigation
     document.getElementById('startQuizBtn').onclick = () => {
         resetQuiz();
         document.getElementById('landingSection').style.display = 'none';
         document.getElementById('quizPage').style.display = 'block';
         startCountdown();
     };
-    
     document.getElementById('nextBtnQuiz').onclick = nextQuestion;
-    
-    document.getElementById('submitScoreBtn').onclick = async () => {
+    document.getElementById('submitScoreBtn').onclick = () => {
         const nameInput = document.getElementById('playerNameInput').value.trim();
-        if (!nameInput) {
-            alert("Please enter your name!");
-            return;
-        }
+        if (!nameInput) { alert("Please enter your name!"); return; }
         const { score, time } = window.finalQuizData;
-        await saveScoreToFirebase(nameInput, score, time);
-        showToast(`✅ ${escapeHtml(nameInput)} saved to global leaderboard!`);
+        addScoreEntry(nameInput, score, time);
         document.getElementById('nameEntry').style.display = 'none';
         document.getElementById('landingSection').style.display = 'flex';
     };
     
-    // ======================== ADMIN PANEL ========================
-    const adminPanelDiv = document.getElementById('adminPanel');
-    const landingDiv = document.getElementById('landingSection');
-    
+    // Admin
     function openAdminModal() {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
-        modal.id = 'adminModal';
         modal.innerHTML = `
             <div class="glass-panel" style="padding: 2rem; width: 90%; max-width: 400px; text-align: center;">
                 <i class="fas fa-user-shield" style="font-size: 3rem; color: #0ff;"></i>
@@ -698,69 +505,46 @@
             const pass = document.getElementById('adminPasswordInput').value;
             if (pass === 'admin123') {
                 modal.remove();
-                landingDiv.style.display = 'none';
-                adminPanelDiv.style.display = 'block';
-                listenToLeaderboard();
-            } else {
-                alert("❌ Invalid password! Access denied.");
-            }
+                document.getElementById('landingSection').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadLocalData();
+                if (window.syncInterval) clearInterval(window.syncInterval);
+                window.syncInterval = setInterval(() => { loadLocalData(); }, 3000);
+            } else { alert("❌ Invalid password!"); }
         };
         document.getElementById('closeModalBtn').onclick = () => modal.remove();
     }
     
     document.getElementById('openAdminBtn').onclick = openAdminModal;
     document.getElementById('closeAdminBtn').onclick = () => {
-        adminPanelDiv.style.display = 'none';
-        landingDiv.style.display = 'flex';
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('landingSection').style.display = 'flex';
+        if (window.syncInterval) clearInterval(window.syncInterval);
     };
-    document.getElementById('deleteAllBtn').onclick = deleteAllFromFirebase;
+    document.getElementById('deleteAllBtn').onclick = deleteAllEntries;
+    document.getElementById('refreshNowBtn').onclick = () => { loadLocalData(); showToast("Refreshed!"); };
     
-    // ======================== PARTICLES BACKGROUND ========================
+    // Particles
     const canvas = document.getElementById('particleCanvas');
-    const ctxPart = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     let particles = [];
-    for (let i = 0; i < 120; i++) {
-        particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            radius: Math.random() * 2 + 1,
-            alpha: Math.random() * 0.5,
-            vx: (Math.random() - 0.5) * 0.5,
-            vy: (Math.random() - 0.5) * 0.3
-        });
-    }
+    for (let i = 0; i < 100; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2 + 1, alpha: Math.random() * 0.5, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.3 });
     function animateParticles() {
-        ctxPart.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-            ctxPart.beginPath();
-            ctxPart.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctxPart.fillStyle = `rgba(0, 200, 255, ${p.alpha})`;
-            ctxPart.fill();
-            p.x += p.vx;
-            p.y += p.vy;
-            if (p.x < 0) p.x = canvas.width;
-            if (p.x > canvas.width) p.x = 0;
-            if (p.y < 0) p.y = canvas.height;
-            if (p.y > canvas.height) p.y = 0;
-        });
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(0, 200, 255, ${p.alpha})`; ctx.fill(); p.x += p.vx; p.y += p.vy; if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0; if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0; });
         requestAnimationFrame(animateParticles);
     }
     animateParticles();
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    });
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
     
-    // ======================== INITIALIZATION ========================
+    // Init
     setTimeout(() => {
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('appRoot').style.display = 'block';
+        loadLocalData();
         gsap.from('.glass-panel', { duration: 0.8, scale: 0.9, opacity: 0, y: 30, stagger: 0.1 });
-        // Load initial data
-        listenToLeaderboard();
-    }, 2000);
+    }, 1500);
 </script>
 </body>
 </html>

@@ -392,17 +392,31 @@
     }
     
     // ======================== QUIZ LOGIC ========================
-    const questions = [
-        { text: "What does IEEE stand for?", options: ["Institute of Electrical and Electronics Engineers", "International Engineering Excellence", "Internet Electrical Engineering", "Innovative Energy and Electronics"], correct: 0 },
-        { text: "Which year was IEEE founded?", options: ["1884", "1901", "1947", "1960"], correct: 0 },
-        { text: "What is the main benefit of real-time databases?", options: ["Instant synchronization", "Better graphics", "Offline storage only", "No security"], correct: 0 },
-        { text: "Which library is used for advanced animations?", options: ["GSAP", "jQuery", "Bootstrap", "Lodash"], correct: 0 },
-        { text: "Which of these is a modern UI trend?", options: ["Glassmorphism", "Skeuomorphism", "Flat only", "Heavy shadows"], correct: 0 },
-        { text: "What does API stand for?", options: ["Application Programming Interface", "Applied Protocol Interface", "Advanced Peripheral Integration", "Algorithmic Programming Input"], correct: 0 },
-        { text: "The first microprocessor was introduced by?", options: ["Intel", "AMD", "IBM", "Texas Instruments"], correct: 0 },
-        { text: "Which company developed Firebase?", options: ["Google", "Amazon", "Microsoft", "Meta"], correct: 0 }
-    ];
-    const TOTAL_QS = 8;
+   // ======================== QUIZ LOGIC ========================
+const questions = [
+    { text: "Which of the following represents the correct syntax for defining a variable in C++?", options: ["int = x 5;", "int x = 5;", "x int = 5;", "5 = int x;"], correct: 1 },
+
+    { text: "What is the main difference between compiled and interpreted languages?", options: ["There is no difference", "A compiler executes directly without translation", "A compiler converts to machine language before execution", "An interpreter is always faster"], correct: 2 },
+
+    { text: "Which of the following is an example of an interpreted language?", options: ["C++", "Java", "Python", "C"], correct: 2 },
+
+    { text: "Which of the following represents a valid loop in C++?", options: ["for i = 0 to 10", "for (int i = 0; i < 10; i++)", "for i in range(10)", "loop (i < 10)"], correct: 1 },
+
+    { text: "Which of the following is a type of malware?", options: ["Firewall", "Antivirus", "Trojan", "VPN"], correct: 2 },
+
+    { text: "What is phishing?", options: ["An attack across an internal network", "An attempt to trick a user into providing sensitive information", "Internet acceleration", "Data encryption"], correct: 1 },
+
+    { text: "What is Two-Factor Authentication (2FA)?", options: ["Using two passwords", "An additional layer of security using two verification methods", "Deleting an account", "Changing a password"], correct: 1 },
+
+    { text: "What is the function of a model in artificial intelligence?", options: ["Displaying images", "A mathematical representation that learns from data to make decisions or predictions", "Storing data", "Operating a device"], correct: 1 },
+
+    { text: "What is Natural Language Processing (NLP)?", options: ["Image processing", "Understanding and processing human language by computer", "Network analysis", "Game design"], correct: 1 },
+
+    { text: "What is Artificial Intelligence (AI)?", options: ["Web design", "The ability of systems to mimic human intelligence", "Internet acceleration", "Data storage"], correct: 1 }
+];
+
+// 🔥 عدلنا العدد إلى 10
+const TOTAL_QS = 10;
     
     let currentQIndex = 0, currentScore = 0, totalSeconds = 0, quizActive = false, timerInterval = null, answerLocked = false;
     

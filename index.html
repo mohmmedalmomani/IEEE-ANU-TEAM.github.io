@@ -6,6 +6,9 @@
     <title>IEEE ANU | Speed Challenge - Knowledge Race</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -393,9 +396,19 @@
 </div>
 
 <script>
-    // ======================== التكوين: رابط Google Apps Script ========================
-    // ⚠️ IMPORTANT: استبدل هذا الرابط برابط تطبيق الويب الذي أنشأته في Google Apps Script
-    const SCRIPT_URL = "https://script.google.com/macros/library/d/1CU9UGge7xH3ZMKdffETgeRUzRJGW_aJVD8fiaV7DEASG4WPHOc5NHdd4/2"; // <--- غيّر هذا الرابط
+    // 🔥 Firebase Configuration - ضع إعدادات مشروعك هنا 🔥
+    const firebaseConfig = {
+        apiKey: "AIzaSyAWnexx5GRlVYyBrjuCM6RZRwxLQ4xOY-U",          // اكتب الـ API Key من Firebase Console
+        authDomain: "leee-arnu-quiz.firebaseapp.com",
+        projectId: "leee-arnu-quiz",
+        storageBucket: "leee-arnu-quiz.firebasestorage.app",
+        messagingSenderId: "418080244828",
+        appId: "1:418080244828:web:8b32a697340ba1c03751340"
+    };
+    
+    // تهيئة Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
     
     // الأسئلة بالإنجليزية
     const QUESTIONS = [
@@ -526,24 +539,19 @@
         return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
     }
 
-    // ======================== حفظ البيانات في Google Sheets ========================
-    async function saveToGoogleSheets(name, timeSec, scorePoints) {
+    // ======================== حفظ البيانات في Firebase ========================
+    async function saveToFirebase(name, timeSec, scorePoints) {
         try {
-            // استخدام fetch مع mode: 'no-cors' لتجنب مشاكل CORS
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: name,
-                    time: timeSec,
-                    score: scorePoints,
-                    date: new Date().toISOString()
-                })
+            await db.collection("quiz_results").add({
+                name: name,
+                time: timeSec,
+                score: scorePoints,
+                date: new Date().toISOString(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
             return true;
         } catch(e) {
-            console.error("Error saving to Google Sheets:", e);
+            console.error("Firebase Error:", e);
             return false;
         }
     }
@@ -584,8 +592,8 @@
                 return; 
             }
             
-            showMessage("Saving your result...", "#0ff");
-            const success = await saveToGoogleSheets(name, finalElapsedSeconds, finalScore);
+            showMessage("Saving your result to cloud...", "#0ff");
+            const success = await saveToFirebase(name, finalElapsedSeconds, finalScore);
             
             if (success) {
                 showMessage("✅ Your result has been saved globally! 🎉", "#24a85c");
@@ -593,9 +601,9 @@
                 showMessage("⚠️ Error saving result. Please try again.", "#ff4444");
             }
             
-            // الانتظار ثانيتين ثم العودة إلى صفحة الاختبار الجديد
+            // الانتظار ثانيتين ثم الانتقال إلى صفحة المتصدرين
             setTimeout(() => { 
-                window.location.reload(); 
+                window.location.href = "leaderboard.html"; 
             }, 2500);
         });
     }

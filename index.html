@@ -538,14 +538,14 @@ const TOTAL_QS = 10;
                 <h2 style="margin: 1rem 0;">Admin Authentication</h2>
                 <input type="password" id="adminPasswordInput" class="admin-input" placeholder="Enter Admin Password" style="margin: 1rem 0;">
                 <button id="confirmAdminBtn" class="neon-btn" style="width: 100%;">Unlock Global Dashboard</button>
-                <p style="margin-top: 1rem; font-size: 0.8rem;">Access Pass: <strong style="color:#0ff;">admin123</strong></p>
+                <p style="margin-top: 1rem; font-size: 0.8rem;">Access Pass: <strong style="color:#0ff;">مــجــهــول</strong></p>
                 <button id="closeModalBtn" style="background: none; border: none; color: #aaa; margin-top: 1rem; cursor: pointer;">Cancel</button>
             </div>
         `;
         document.body.appendChild(modal);
         document.getElementById('confirmAdminBtn').onclick = async () => {
             const pass = document.getElementById('adminPasswordInput').value;
-            if (pass === 'admin123') {
+            if (pass === 'ieeeanu2026') {
                 modal.remove();
                 document.getElementById('landingSection').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';

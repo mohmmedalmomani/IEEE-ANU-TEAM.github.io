@@ -42,7 +42,114 @@
         .sync-status { position: fixed; top: 10px; right: 10px; background: #000000aa; border-radius: 20px; padding: 5px 12px; font-size: 0.7rem; z-index: 100; backdrop-filter: blur(5px); }
         .config-panel { background: #1a1a3a; border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid #0ff; }
         .config-input { background: #0a0a2a; border: 1px solid #0ff; padding: 8px 12px; border-radius: 8px; color: white; margin: 5px; width: 200px; }
-    </style>
+   /* ====== TITLE ANIMATION ====== */
+.title-anim {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(270deg, #0ff, #7a4aff, #00c6ff, #0ff);
+    background-size: 600% 600%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradientMove 6s ease infinite, floatTitle 3s ease-in-out infinite;
+    text-shadow: 0 0 20px rgba(0,255,255,0.3);
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes floatTitle {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+/* ====== SUBTITLE ANIMATION ====== */
+.subtitle-anim {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    opacity: 0.85;
+    color: #aaa;
+    letter-spacing: 2px;
+    animation: fadePulse 3s ease-in-out infinite;
+}
+
+@keyframes fadePulse {
+    0%,100% { opacity: 0.6; transform: translateY(0px); }
+    50% { opacity: 1; transform: translateY(-3px); }
+}
+  
+.dev-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.35);
+    backdrop-filter: blur(8px);
+    color: #ccc;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    animation: devFloat 3s ease-in-out infinite;
+}
+
+.dev-icon {
+    background: rgba(0, 255, 255, 0.15);
+    border: 1px solid #0ff;
+    padding: 3px 8px;
+    border-radius: 20px;
+    color: #0ff;
+    font-weight: bold;
+    font-size: 0.75rem;
+}
+
+@keyframes devFloat {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(-4px); }
+}  
+  
+  .logo-icon {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+    
+    /* Glow احترافي */
+    filter: drop-shadow(0 0 10px rgba(0,255,255,0.6)) 
+            drop-shadow(0 0 25px rgba(0,255,255,0.3));
+    
+    /* أنيميشن دخول + حركة */
+    animation: logoEnter 1.2s ease-out, logoFloat 3s ease-in-out infinite;
+}
+
+/* دخول احترافي */
+@keyframes logoEnter {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(-20deg);
+        filter: blur(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+        filter: blur(0);
+    }
+}
+
+/* حركة خفيفة */
+@keyframes logoFloat {
+    0%, 100% {
+        transform: translateY(0px) scale(1);
+    }
+    50% {
+        transform: translateY(-6px) scale(1.05);
+    }
+}
+  </style>
 </head>
 <body>
 
@@ -63,11 +170,12 @@
     <!-- LANDING SECTION -->
     <div id="landingSection" class="fade-zoom" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;">
         <div class="glass-panel" style="padding: 3rem 2rem; max-width: 700px; width: 90%;">
-            <i class="fas fa-globe" style="font-size: 3rem; color: #0ff; margin-bottom: 1rem;"></i>
-            <h1 style="font-size: 3.5rem; background: linear-gradient(135deg, #aaffff, #7a4aff, #0ff); -webkit-background-clip: text; background-clip: text; color: transparent;">IEEE ANU TEAM</h1>
-            <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.8;">DEVELOPED BY MOHAMMED ALMOMANI</p>
-            
-            <!-- Configuration Panel -->
+<img src="https://cdn.discordapp.com/attachments/1321104375791484989/1500102165501444247/1.png?ex=69f73682&is=69f5e502&hm=b2501200b92512bfe5a69c2823ed64c887017843d3dc3e32a435396cf1903354&" alt="IEEE ANU Logo" class="logo-icon">          <h1 class="title-anim">IEEE ANU TEAM</h1>
+
+<div class="dev-badge">
+    <span class="dev-icon">&lt;/&gt;</span>
+    <span class="dev-text">DEVELOPED BY MOHAMMED ALMOMANI</span>
+</div>            <!-- Configuration Panel -->
             <div class="config-panel" style="margin: 20px 0; text-align: left;">
                 <h4 style="color:#0ff; margin-bottom: 10px;"><i class="fas fa-key"></i> JSONBin.io Configuration (Required for Cross-Device Sync)</h4>
                 <p style="font-size: 12px; margin-bottom: 10px;">⚠️ Get your FREE API Key from <a href="https://jsonbin.io" target="_blank" style="color:#0ff;">jsonbin.io</a> → Sign up → Account Settings → API Keys</p>

@@ -6,402 +6,48 @@
     <title>IEEE ANU | Quiz Challenge | Cross-Device Sync</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg-deep: #0a0a1a;
-            --bg-mid: #0a1430;
-            --text: #eef5ff;
-            --muted: #9aaecb;
-            --accent: #00e5ff;
-            --accent-soft: rgba(0, 230, 255, 0.35);
-            --glass-bg: rgba(12, 22, 48, 0.55);
-            --glass-edge: rgba(0, 255, 255, 0.28);
-            --mesh-a: rgba(90, 40, 200, 0.35);
-            --mesh-b: rgba(0, 200, 255, 0.25);
-            --mesh-c: rgba(255, 0, 180, 0.12);
-            --panel-shadow: 0 28px 60px rgba(0, 0, 0, 0.45), 0 0 42px rgba(0, 200, 255, 0.12);
-            --sync-pulse-dur: 2.8s;
-            --sync-glow: 0.42;
-            color-scheme: dark;
-        }
-        [data-theme="light"] {
-            --bg-deep: #f0f4ff;
-            --bg-mid: #dde8ff;
-            --text: #0f1630;
-            --muted: #4a5678;
-            --accent: #0066aa;
-            --accent-soft: rgba(0, 102, 170, 0.2);
-            --glass-bg: rgba(255, 255, 255, 0.72);
-            --glass-edge: rgba(0, 120, 200, 0.35);
-            --mesh-a: rgba(130, 80, 255, 0.2);
-            --mesh-b: rgba(0, 180, 220, 0.18);
-            --mesh-c: rgba(255, 100, 160, 0.1);
-            --panel-shadow: 0 22px 50px rgba(30, 50, 100, 0.15), 0 0 36px rgba(0, 150, 255, 0.08);
-            --sync-glow: 0.85;
-            color-scheme: light;
-        }
-        html {
-            scroll-behavior: smooth;
-            --gx: 50%;
-            --gy: 42%;
-            --glass-glow-strong: 0.55;
-        }
-        /** 16:9-friendly stage: avoids ultra-stretched layouts on wide displays */
-        .stage-shell {
-            width: 100%;
-            min-height: 100dvh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding-bottom: clamp(0.75rem, 3vh, 2rem);
-            padding-inline: clamp(0.65rem, 2.5vw, 1rem);
-            box-sizing: border-box;
-        }
-        .stage-frame {
-            width: min(96vw, calc(94dvh * 16 / 9), 980px);
-            max-width: 100%;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-deep);
-            color: var(--text);
-            overflow-x: hidden;
-            transition: background 0.55s cubic-bezier(0.4, 0, 0.2, 1), color 0.35s ease, filter 0.12s ease;
-        }
-        body.chromatic-flick {
-            filter: drop-shadow(1.8px 0 0 rgba(255, 40, 120, 0.45)) drop-shadow(-1.8px 0 0 rgba(0, 255, 230, 0.45));
-        }
-        body.quiz-shake { animation: screenShake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
-        @keyframes screenShake {
-            0%, 100% { transform: translate3d(0, 0, 0); }
-            22% { transform: translate3d(-6px, 2px, 0); }
-            48% { transform: translate3d(8px, -3px, 0); }
-            70% { transform: translate3d(-5px, -2px, 0); }
-        }
-        #correctPulseLayer {
-            position: fixed;
-            inset: 0;
-            z-index: 50;
-            pointer-events: none;
-            background: radial-gradient(ellipse at center, rgba(0, 255, 200, 0.42), transparent 68%);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        #correctPulseLayer.is-on { opacity: 1; transition-duration: 0.08s; }
-        /** Developer system signature — always visible attribution */
-        .system-signature {
-            font-family: ui-monospace, 'SF Mono', 'Consolas', monospace;
-            font-size: clamp(0.72rem, 0.62rem + 0.42vw, 0.92rem);
-            letter-spacing: 0.42em;
-            text-transform: uppercase;
-            margin-top: 0.95rem !important;
-            color: var(--muted);
-            opacity: 0.88;
-            position: relative;
-            display: inline-block;
-            padding: 0.35rem 0.55rem;
-            border: 1px solid rgba(0, 230, 255, 0.22);
-            border-radius: 0.35rem;
-            box-shadow: 0 0 18px rgba(0, 200, 255, 0.08), inset 0 0 20px rgba(0, 80, 120, 0.06);
-        }
-        .system-signature::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
-        }
-        .animated-bg {
-            position: fixed; inset: 0; z-index: -3;
-            background:
-                radial-gradient(ellipse 100% 80% at 20% 15%, var(--mesh-a) 0%, transparent 52%),
-                radial-gradient(ellipse 90% 70% at 85% 20%, var(--mesh-b) 0%, transparent 48%),
-                radial-gradient(circle at 55% 88%, var(--mesh-c), transparent 45%),
-                linear-gradient(128deg, var(--bg-deep) 0%, var(--bg-mid) 45%, var(--bg-deep) 100%);
-            background-size: 200% 200%, 220% 200%, 100% 100%, 400% 400%;
-            animation: gradientShift 22s ease-in-out infinite, meshDrift 38s linear infinite;
-        }
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 40%, 100% 0%, 50% 100%, 0% 50%; }
-            50% { background-position: 100% 60%, 0% 100%, 50% 0%, 100% 50%; }
-        }
-        @keyframes meshDrift { 0% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(12deg); } 100% { filter: hue-rotate(0deg); } }
-        /* Three.js quantum-field canvas fills viewport */
-        #threeQuantumCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; pointer-events: none; opacity: 0.92; }
-        [data-theme="light"] #threeQuantumCanvas { opacity: 0.55; }
-        .glass-svg-filters { position: absolute; width: 0; height: 0; overflow: hidden; }
-        .glass-panel {
-            position: relative;
-            isolation: isolate;
-            background:
-                radial-gradient(
-                    ellipse 120% 80% at var(--gx) var(--gy),
-                    rgba(0, 235, 255, calc(var(--glass-glow-strong) * 0.16)),
-                    transparent 52%
-                ),
-                linear-gradient(135deg, var(--glass-bg), rgba(8, 16, 40, 0.35));
-            backdrop-filter: blur(28px) saturate(1.65) brightness(1.02);
-            -webkit-backdrop-filter: blur(28px) saturate(1.65) brightness(1.02);
-            border-radius: clamp(1.25rem, 3vw, 2rem);
-            border: 1px solid rgba(0, 255, 245, calc(0.12 + var(--glass-glow-strong) * 0.22));
-            box-shadow:
-                var(--panel-shadow),
-                inset 0 0 80px rgba(0, 200, 255, 0.04),
-                0 0 0 1px rgba(255, 255, 255, 0.06) inset,
-                0 0 clamp(36px, 6vw, 72px) rgba(0, 240, 255, calc(var(--glass-glow-strong) * 0.15));
-            overflow: hidden;
-        }
-        [data-theme="light"] .glass-panel {
-            background: linear-gradient(135deg, var(--glass-bg), rgba(255, 255, 255, 0.85));
-        }
-        .glass-panel::before {
-            content: "";
-            position: absolute; inset: -40%;
-            background:
-                radial-gradient(circle at 30% 20%, rgba(0, 230, 255, 0.14), transparent 42%),
-                radial-gradient(circle at 72% 65%, rgba(160, 80, 255, 0.12), transparent 38%),
-                conic-gradient(from 200deg at 50% 50%, transparent, rgba(0, 255, 200, 0.06), transparent 55%);
-            animation: meshSpin 46s linear infinite;
-            opacity: 0.9;
-            z-index: -1;
-            pointer-events: none;
-        }
-        .glass-panel::after {
-            content: "";
-            position: absolute; inset: 0;
-            border-radius: inherit;
-            background: inherit;
-            filter: url(#glassDisplace);
-            opacity: 0.22;
-            mix-blend-mode: soft-light;
-            pointer-events: none;
-            z-index: -1;
-        }
-        @keyframes meshSpin { to { transform: rotate(360deg); } }
-        .neon-btn.magnetic-target, button.magnetic-target { position: relative; transform: translate(0, 0); will-change: transform; }
-        .neon-btn {
-            background: linear-gradient(135deg, #00d4ff, #0066ff);
-            border: none;
-            padding: 14px 42px;
-            font-size: clamp(0.95rem, 0.85rem + 0.35vw, 1.12rem);
-            font-weight: 700;
-            border-radius: 60px;
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 4px 24px rgba(0, 150, 255, 0.45);
-        }
-        .neon-btn-danger { background: linear-gradient(135deg, #ff416c, #ff4b2b); box-shadow: 0 4px 24px rgba(255, 70, 100, 0.4); }
-        .loading-screen { position: fixed; inset: 0; background: #05050f; display: flex; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; gap: 2rem; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a1a; color: #eef5ff; overflow-x: hidden; }
+        .animated-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(125deg, #0a0a1a 0%, #0a0a2a 30%, #0a1a3a 60%, #0a0a1a 100%); background-size: 400% 400%; animation: gradientShift 15s ease infinite; }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; }
+        .glass-panel { background: rgba(10, 20, 40, 0.75); backdrop-filter: blur(16px); border-radius: 2rem; border: 1px solid rgba(0, 255, 255, 0.3); box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 200, 255, 0.15); }
+        .neon-btn { background: linear-gradient(135deg, #00c6ff, #0072ff); border: none; padding: 14px 42px; font-size: 1.1rem; font-weight: bold; border-radius: 60px; color: white; cursor: pointer; transition: 0.2s; box-shadow: 0 0 12px #00a6ff; }
+        .neon-btn:hover { transform: scale(1.05); box-shadow: 0 0 28px #00e0ff; }
+        .neon-btn-danger { background: linear-gradient(135deg, #ff416c, #ff4b2b); box-shadow: 0 0 12px #ff416c; }
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #05050f; display: flex; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; gap: 2rem; }
         .spinner { width: 70px; height: 70px; border: 4px solid rgba(0, 255, 255, 0.2); border-top: 4px solid #0ff; border-right: 4px solid #f0f; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .option {
-            background: rgba(22, 32, 60, 0.88); margin: 0.75rem 0; padding: 1rem 1.2rem;
-            border-radius: 1.35rem; cursor: pointer; border-left: 4px solid var(--accent);
-            font-weight: 500; transition: background 0.2s ease, transform 0.25s cubic-bezier(0.2, 0.85, 0.3, 1);
-            position: relative; will-change: transform;
-        }
-        [data-theme="light"] .option { background: rgba(255, 255, 255, 0.82); border-left-color: #0088cc; color: var(--text); }
-        .option:hover { transform: translateX(8px); background: rgba(40, 60, 120, 0.55); }
-        [data-theme="light"] .option:hover { background: rgba(220, 235, 255, 0.95); }
-        .correct-glow { box-shadow: 0 0 22px rgba(0, 255, 140, 0.7); background: rgba(0, 255, 140, 0.18); border-left-color: #0f8; }
-        .wrong-glow { box-shadow: 0 0 22px rgba(255, 60, 80, 0.65); background: rgba(255, 60, 80, 0.15); border-left-color: #f44; }
-        .progress-bar { height: 8px; background: linear-gradient(90deg, #0ff, #b366ff, #0ff); width: 0%; border-radius: 10px; transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1); background-size: 200% auto; animation: barShimmer 8s linear infinite; }
-        @keyframes barShimmer { 0% { background-position: 0%; } 100% { background-position: 200%; } }
-        .progress-container { background: rgba(42, 42, 74, 0.5); border-radius: 10px; overflow: hidden; }
-        [data-theme="light"] .progress-container { background: rgba(0, 50, 100, 0.08); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .option { background: rgba(20, 30, 55, 0.9); margin: 0.8rem 0; padding: 1rem 1.2rem; border-radius: 1.5rem; cursor: pointer; transition: 0.2s; border-left: 4px solid #0ff; font-weight: 500; }
+        .option:hover { background: #1e2a5e; transform: translateX(10px); }
+        .correct-glow { box-shadow: 0 0 20px #0f0; background: rgba(0, 255, 0, 0.25); border-left-color: #0f0; }
+        .wrong-glow { box-shadow: 0 0 20px #f00; background: rgba(255, 0, 0, 0.25); border-left-color: #f00; }
+        .progress-bar { height: 8px; background: linear-gradient(90deg, #0ff, #f0f, #0ff); width: 0%; border-radius: 10px; transition: width 0.3s ease; }
+        .progress-container { background: #2a2a4a; border-radius: 10px; overflow: hidden; }
         .leader-table { width: 100%; border-collapse: collapse; }
-        .leader-table th, .leader-table td { padding: 0.8rem; text-align: left; border-bottom: 1px solid var(--accent-soft); }
-        .leader-table th { color: var(--accent); font-weight: 600; }
-        .leader-table tr:hover { background: rgba(0, 230, 255, 0.06); }
-        .winner-flash { position: fixed; bottom: 20px; left: 20px; background: linear-gradient(135deg, #ffb347, #ff5e00); padding: 12px 24px; border-radius: 50px; font-weight: bold; z-index: 1000; animation: toastPulse 0.55s ease-in-out infinite alternate; box-shadow: 0 12px 30px rgba(255, 120, 0, 0.35); }
-        @keyframes toastPulse { from { transform: scale(1); } to { transform: scale(1.04); } }
-        .fade-zoom { animation: fadeZoom 0.65s cubic-bezier(0.2, 0.9, 0.35, 1.05); }
-        @keyframes fadeZoom { from { opacity: 0; transform: scale(0.96); filter: blur(6px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-        .admin-input { background: rgba(15, 25, 45, 0.88); border: 1px solid var(--accent); padding: 14px 20px; border-radius: 50px; color: var(--text); width: 100%; font-size: 1rem; outline: none; }
-        [data-theme="light"] .admin-input { background: rgba(255, 255, 255, 0.95); color: var(--text); border-color: #0088cc; }
-        .admin-input:focus { box-shadow: 0 0 18px var(--accent-soft); }
-        .online-badge { background: rgba(0, 255, 136, 0.18); border: 1px solid #0db; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; margin-left: 10px; }
-        .sync-status {
-            position: fixed; top: 10px; right: clamp(10px, 4vw, 56px); z-index: 150;
-            display: inline-flex; align-items: center; gap: 0.35rem;
-            padding: 0.45rem 0.95rem; font-size: clamp(0.65rem, 0.58rem + 0.35vw, 0.76rem); font-weight: 600;
-            border-radius: 999px; letter-spacing: 0.03em;
-            background: rgba(6, 10, 24, 0.65); border: 1px solid rgba(0, 240, 255, 0.28);
-            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-            animation: syncIdlePulse var(--sync-pulse-dur) ease-in-out infinite;
-            transition: --sync-glow 0.4s ease, filter 0.35s ease, border-color 0.35s ease;
-        }
-        [data-theme="light"] .sync-status {
-            background: rgba(255, 255, 255, 0.82); border-color: rgba(0, 100, 180, 0.28);
-            box-shadow: 0 10px 32px rgba(30, 60, 120, 0.12);
-        }
-        .sync-status i { opacity: 0.95; }
-        .heartbeat-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            margin-right: 0.35rem;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #bff, var(--accent));
-            box-shadow: 0 0 10px var(--accent);
-            animation: heartBeatPulse 2.2s ease-in-out infinite;
-            vertical-align: middle;
-            flex-shrink: 0;
-        }
-        .heartbeat-dot.status-error { animation-duration: 1.05s; background: radial-gradient(circle at 35% 35%, #fcc, #f44); box-shadow: 0 0 10px #f77; }
-        .heartbeat-dot.status-busy { animation-duration: 0.72s; }
-        .heartbeat-dot.status-idle { animation-duration: 3.4s; opacity: 0.55; filter: saturate(0.6); }
-        @keyframes heartBeatPulse {
-            0%, 100% { transform: scale(1); opacity: 0.92; box-shadow: 0 0 8px rgba(0, 255, 245, 0.45); }
-            46% { transform: scale(1.22); opacity: 1; box-shadow: 0 0 16px rgba(0, 255, 245, 0.9); }
-        }
-        @keyframes syncIdlePulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 230, 255, calc(var(--sync-glow) * 0.15)), inset 0 0 14px rgba(0, 255, 240, calc(var(--sync-glow) * 0.04)); transform: translateZ(0); }
-            50% { box-shadow: 0 0 calc(22px + 8px * var(--sync-glow)) rgba(0, 230, 255, calc(var(--sync-glow) * 0.35)), inset 0 0 18px rgba(120, 200, 255, calc(var(--sync-glow) * 0.08)); transform: translateZ(0) scale(1.02); }
-        }
-        .sync-status.busy {
-            --sync-pulse-dur: 1.05s;
-            --sync-glow: 1;
-            border-color: rgba(255, 220, 100, 0.55);
-        }
-        .config-panel {
-            background: rgba(26, 32, 58, 0.55); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--accent-soft);
-        }
-        [data-theme="light"] .config-panel { background: rgba(255, 255, 255, 0.65); border-color: rgba(0, 100, 200, 0.2); }
-        .config-input { background: rgba(10, 18, 42, 0.88); border: 1px solid var(--accent); padding: 8px 12px; border-radius: 8px; color: var(--text); margin: 5px; width: 200px; }
-        [data-theme="light"] .config-input { background: rgba(255, 255, 255, 0.95); }
-        .ui-chrome-fixed { position: fixed; top: 10px; left: 10px; z-index: 160; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-        .pill-toggle, .ambient-pill {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            padding: 0.42rem 0.82rem; border-radius: 999px; cursor: pointer; font-weight: 600;
-            font-size: 0.72rem; letter-spacing: 0.02em;
-            border: 1px solid rgba(0, 240, 255, 0.35);
-            background: rgba(10, 16, 40, 0.55); backdrop-filter: blur(12px); color: var(--text);
-            transition: background 0.35s ease, border-color 0.35s ease, transform 0.35s cubic-bezier(0.2, 0.85, 0.3, 1);
-            user-select: none;
-        }
-        [data-theme="light"] .pill-toggle, [data-theme="light"] .ambient-pill {
-            border-color: rgba(0, 100, 200, 0.28); background: rgba(255, 255, 255, 0.85);
-            box-shadow: 0 4px 14px rgba(30, 60, 100, 0.08);
-        }
-        .pill-toggle:hover, .ambient-pill:hover { border-color: var(--accent); transform: translateY(-1px); }
-        .pill-toggle .dot { width: 9px; height: 9px; border-radius: 50%; background: linear-gradient(135deg, #ffea7a, #ff9a33); box-shadow: 0 0 10px rgba(255, 200, 80, 0.6); }
-        [data-theme="light"] .pill-toggle .dot { background: linear-gradient(135deg, #3399ff, #66ddff); }
-        .ambient-pill.muted span.label { opacity: 0.75; }
-        .kbd-hint { margin-top: 0.85rem; font-size: clamp(0.68rem, 0.62rem + 0.35vw, 0.82rem); color: var(--muted); opacity: 0.9; }
-        .kbd-hint kbd {
-            font-family: ui-monospace, monospace; padding: 0.12rem 0.42rem; border-radius: 6px;
-            background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.12); margin: 0 0.1rem;
-        }
-        [data-theme="light"] .kbd-hint kbd { background: rgba(0, 50, 100, 0.08); border-color: rgba(0, 80, 160, 0.2); }
-        .hero-title {
-            font-size: clamp(2.05rem, 6vw + 0.65rem, 3.95rem); font-weight: 800; line-height: 1.06; letter-spacing: -0.02em;
-            background: linear-gradient(120deg, #b8ffff 0%, #9a6bff 42%, #00f5ff 88%);
-            background-size: 200% auto;
-            -webkit-background-clip: text; background-clip: text; color: transparent;
-            text-shadow: 0 0 42px rgba(0, 255, 240, 0.25); filter: drop-shadow(0 0 26px rgba(100, 200, 255, 0.35));
-            animation: titleFlow 14s linear infinite;
-        }
-        [data-theme="light"] .hero-title {
-            background: linear-gradient(118deg, #0050a8 0%, #7a39d4 46%, #0088aa 92%);
-            background-size: 200% auto;
-            filter: drop-shadow(0 0 12px rgba(0, 120, 200, 0.15));
-        }
-        @keyframes titleFlow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-        .subtitle-glow { font-size: clamp(0.88rem, 0.82rem + 0.35vw, 1.05rem); margin-top: 0.55rem; color: var(--muted); }
-        .admin-bento {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: clamp(0.75rem, 2vw, 1.25rem);
-            margin-bottom: 2rem;
-        }
-        .bento-span-4 { grid-column: span 4; min-height: 120px; }
-        .bento-span-8 { grid-column: span 8; min-height: 220px; }
-        .bento-span-12 { grid-column: span 12; }
-        .bento-card {
-            border-radius: 1.15rem;
-            border: 1px solid var(--accent-soft);
-            background: rgba(0, 0, 0, 0.22);
-            backdrop-filter: blur(12px);
-            padding: clamp(0.85rem, 2vw, 1.35rem);
-        }
-        [data-theme="light"] .bento-card { background: rgba(255, 255, 255, 0.62); }
-        .bento-card-header { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.11em; color: var(--muted); margin-bottom: 0.6rem; }
-        .chart-canvas-frame { position: relative; height: clamp(170px, 28vw, 240px); }
-        .chart-canvas-frame canvas { max-height: 100%; }
-        @media (max-width: 900px) {
-            .admin-bento { grid-template-columns: 1fr; }
-            .bento-span-4, .bento-span-8, .bento-span-12 { grid-column: span 1; }
-        }
-        .admin-stats-inline {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .stat-card {
-            padding: 1rem 1.15rem; border-radius: 1rem; border: 1px solid var(--accent-soft);
-            background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px);
-        }
-        [data-theme="light"] .stat-card { background: rgba(255, 255, 255, 0.55); }
-        .stat-card h4 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 0.4rem; }
-        .stat-card .stat-value { font-size: 1.55rem; font-weight: 800; color: var(--accent); }
-        .btn-row-stack { display: flex; flex-wrap: wrap; gap: 0.65rem; justify-content: center; margin-top: 1rem; }
-        .btn-ghost { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 22px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.92rem; transition: background 0.25s ease, color 0.25s ease; }
-        .btn-ghost:hover { background: var(--accent-soft); color: var(--text); }
-        .share-status { min-height: 1.1rem; font-size: 0.78rem; margin-top: 0.5rem; color: var(--accent); }
-        #questionText.quiz-q-flow {
-            font-size: clamp(1.05rem, 0.88rem + 0.95vw, 1.68rem); font-weight: 600;
-            margin: clamp(1rem, 0.85rem + 0.85vw, 1.85rem) 0; line-height: 1.35;
-        }
-        .option.role-option { outline: none; }
-        .option.role-option:focus-visible { box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.55); }
-        .sr-visually-hidden {
-            position: absolute;
-            width: 1px; height: 1px;
-            padding: 0; margin: -1px;
-            overflow: hidden; clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-        @media (prefers-reduced-motion: reduce) {
-            body.quiz-shake { animation: none !important; }
-            .heartbeat-dot { animation: none !important; }
-            .glass-panel::before { animation: none !important; }
-            .hero-title { animation: none !important; }
-        }
-        @media (max-width: 768px) {
-            .leader-table th, .leader-table td { padding: 0.5rem; font-size: 0.8rem; }
-            .neon-btn { padding: 10px 24px; }
-            .sync-status { right: 8px; top: auto; bottom: 10px; max-width: calc(100% - 16px); }
-            .ui-chrome-fixed { top: auto; bottom: 56px; left: 8px; right: 8px; justify-content: center; }
-            .stage-frame { width: 100%; max-width: 100%; }
-        }
+        .leader-table th, .leader-table td { padding: 0.8rem; text-align: left; border-bottom: 1px solid rgba(0, 255, 255, 0.2); }
+        .leader-table th { color: #0ff; font-weight: 600; }
+        .leader-table tr:hover { background: rgba(0, 255, 255, 0.05); }
+        .winner-flash { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #ffb347, #ff5e00); padding: 12px 24px; border-radius: 50px; font-weight: bold; z-index: 1000; animation: pulse 0.5s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .fade-zoom { animation: fadeZoom 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+        @keyframes fadeZoom { from { opacity: 0; transform: scale(0.95); filter: blur(4px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
+        @media (max-width: 768px) { .leader-table th, .leader-table td { padding: 0.5rem; font-size: 0.8rem; } .neon-btn { padding: 10px 24px; } }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .admin-input { background: rgba(15, 25, 45, 0.9); border: 1px solid #0ff; padding: 14px 20px; border-radius: 50px; color: white; width: 100%; font-size: 1rem; outline: none; }
+        .admin-input:focus { box-shadow: 0 0 15px #0ff; }
+        .online-badge { background: #00ff8844; border: 1px solid #0f8; border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; margin-left: 10px; }
+        .sync-status { position: fixed; top: 10px; right: 10px; background: #000000aa; border-radius: 20px; padding: 5px 12px; font-size: 0.7rem; z-index: 100; backdrop-filter: blur(5px); }
+        .config-panel { background: #1a1a3a; border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid #0ff; }
+        .config-input { background: #0a0a2a; border: 1px solid #0ff; padding: 8px 12px; border-radius: 8px; color: white; margin: 5px; width: 200px; }
     </style>
 </head>
 <body>
 
-<svg class="glass-svg-filters" aria-hidden="true" focusable="false">
-    <defs>
-        <filter id="glassDisplace" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="2" seed="3" result="noise" />
-            <feGaussianBlur in="noise" stdDeviation="0.6" result="blurNoise" />
-            <feDisplacementMap in="SourceGraphic" in2="blurNoise" scale="6" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-    </defs>
-</svg>
-
 <div class="animated-bg"></div>
-<div id="correctPulseLayer" aria-hidden="true"></div>
-<canvas id="threeQuantumCanvas"></canvas>
+<canvas id="particleCanvas"></canvas>
 
 <div class="loading-screen" id="loadingScreen">
     <div class="spinner"></div>
@@ -410,26 +56,16 @@
 </div>
 
 <div id="appRoot" style="display: none;">
-    <div class="ui-chrome-fixed">
-        <button type="button" id="themeToggle" class="pill-toggle magnetic-target" aria-pressed="false" title="Toggle light / dark">
-            <span class="dot" aria-hidden="true"></span><span class="theme-label">Dark</span>
-        </button>
-        <button type="button" id="ambientToggle" class="ambient-pill magnetic-target muted" title="Ambient tech loop (off by default)">
-            <i class="fas fa-volume-mute" aria-hidden="true"></i><span class="label">Ambient: Off</span>
-        </button>
-    </div>
-    <div class="sync-status" id="syncStatus" role="status" aria-live="polite" aria-label="JSONBin sync status">
-        <span class="heartbeat-dot status-idle" id="heartbeatSync" aria-hidden="true"></span>
-        <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i> <span id="syncText">Ready</span>
+    <div class="sync-status" id="syncStatus">
+        <i class="fas fa-cloud-upload-alt"></i> <span id="syncText">Ready</span>
     </div>
 
     <!-- LANDING SECTION -->
-    <div id="landingSection" class="fade-zoom stage-shell" style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-        <div class="stage-frame" style="margin: auto; text-align: center;">
-            <div class="glass-panel" style="padding: clamp(1.85rem, 4vw, 3rem); width: 100%;">
-            <i class="fas fa-globe" style="font-size: clamp(2.2rem, 5vw, 3rem); color: var(--accent); margin-bottom: 0.85rem;"></i>
-            <h1 class="hero-title">IEEE ANU TEAM</h1>
-            <p class="system-signature" aria-label="System signature">developed by mohammed almomani</p>
+    <div id="landingSection" class="fade-zoom" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;">
+        <div class="glass-panel" style="padding: 3rem 2rem; max-width: 700px; width: 90%;">
+            <i class="fas fa-globe" style="font-size: 3rem; color: #0ff; margin-bottom: 1rem;"></i>
+            <h1 style="font-size: 3.5rem; background: linear-gradient(135deg, #aaffff, #7a4aff, #0ff); -webkit-background-clip: text; background-clip: text; color: transparent;">IEEE ANU TEAM</h1>
+            <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.8;">DEVELOPED BY MOHAMMED ALMOMANI</p>
             
             <!-- Configuration Panel -->
             <div class="config-panel" style="margin: 20px 0; text-align: left;">
@@ -437,12 +73,12 @@
                 <p style="font-size: 12px; margin-bottom: 10px;">⚠️ Get your FREE API Key from <a href="https://jsonbin.io" target="_blank" style="color:#0ff;">jsonbin.io</a> → Sign up → Account Settings → API Keys</p>
                 <input type="text" id="binIdInput" class="config-input" placeholder="Bin ID" style="width: calc(50% - 10px);">
                 <input type="text" id="apiKeyInput" class="config-input" placeholder="API Key (X-Master-Key)" style="width: calc(50% - 10px);">
-                <button type="button" id="saveConfigBtn" class="magnetic-target" style="background:var(--accent); border:none; padding:8px 15px; border-radius:8px; margin-top:10px; cursor:pointer; color:#041018; font-weight:700;">Save & Sync</button>
+                <button id="saveConfigBtn" style="background:#0ff; border:none; padding:8px 15px; border-radius:8px; margin-top:10px; cursor:pointer;">Save & Sync</button>
                 <p id="configStatus" style="font-size: 11px; margin-top: 8px; color: #ffaa00;"></p>
             </div>
             
             <div style="margin: 1rem 0;">
-                <button type="button" id="startQuizBtn" class="neon-btn magnetic-target"><i class="fas fa-play"></i> START QUIZ <i class="fas fa-bolt"></i></button>
+                <button id="startQuizBtn" class="neon-btn"><i class="fas fa-play"></i> START QUIZ <i class="fas fa-bolt"></i></button>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: center; font-size: 0.85rem;">
                 <span><i class="fas fa-trophy"></i> Global Challenge</span>
@@ -450,53 +86,42 @@
                 <span><i class="fas fa-cloud-upload-alt"></i> Cross-Device Sync</span>
             </div>
             <div style="margin-top: 2rem;">
-                <button type="button" id="openAdminBtn" class="btn-ghost magnetic-target">
+                <button id="openAdminBtn" style="background: transparent; border: 1px solid #0ff; padding: 8px 20px; border-radius: 30px; color: #0ff; cursor: pointer;">
                     <i class="fas fa-lock"></i> Admin Dashboard
                 </button>
-            </div>
             </div>
         </div>
     </div>
 
     <!-- QUIZ PAGE -->
-    <div id="quizPage" class="stage-shell" role="application" aria-label="IEEE ANU Quiz" style="display: none;">
-        <div class="stage-frame" style="padding: clamp(1rem, 3vw, 2rem); width: 100%;">
-            <div class="glass-panel" style="margin: 0 auto; padding: clamp(1.25rem, 3.5vw, 2rem); width: 100%;">
-                <span class="sr-visually-hidden" id="quizAriaLiveRegion" aria-live="assertive" aria-atomic="true"></span>
-                <div style="display: flex; justify-content: space-between; gap: 0.65rem; flex-wrap: wrap; margin-bottom: 1.35rem;">
-                    <span aria-label="Elapsed quiz time"><i class="fas fa-hourglass-half" aria-hidden="true"></i> <span id="totalTimerDisplay">00:00</span></span>
-                    <span aria-label="Question progress"><i class="fas fa-question-circle" aria-hidden="true"></i> <span id="qCounter">1</span><span id="qTotalLabel">/10</span></span>
-                    <span aria-label="Current score"><i class="fas fa-star" aria-hidden="true"></i> Score: <span id="scoreDisplay">0</span></span>
-                </div>
-                <div class="progress-container" style="margin-bottom: 1.35rem;" aria-label="Quiz progress">
-                    <div class="progress-bar" id="globalProgressBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Question progress bar"></div>
-                </div>
-                <h2 id="questionText" class="quiz-q-flow" tabindex="-1"></h2>
-                <div id="optionsContainer" role="listbox" aria-labelledby="questionText"></div>
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button type="button" id="nextBtnQuiz" class="neon-btn magnetic-target" disabled style="padding: 10px 35px;">Next question <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
-                </div>
-                <p class="kbd-hint" id="quizKbdHint"><kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> select answer · <kbd>Enter</kbd> next question</p>
+    <div id="quizPage" style="display: none; padding: 2rem 1rem;">
+        <div class="glass-panel" style="max-width: 750px; margin: 0 auto; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+                <span><i class="fas fa-hourglass-half"></i> <span id="totalTimerDisplay">00:00</span></span>
+                <span><i class="fas fa-question-circle"></i> <span id="qCounter">1</span>/8</span>
+                <span><i class="fas fa-star"></i> Score: <span id="scoreDisplay">0</span></span>
+            </div>
+            <div class="progress-container" style="margin-bottom: 1.5rem;">
+                <div class="progress-bar" id="globalProgressBar"></div>
+            </div>
+            <div id="questionText" style="font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0;"></div>
+            <div id="optionsContainer"></div>
+            <div style="margin-top: 2rem; text-align: center;">
+                <button id="nextBtnQuiz" class="neon-btn" disabled style="padding: 10px 35px;">Next <i class="fas fa-arrow-right"></i></button>
             </div>
         </div>
     </div>
 
     <!-- NAME ENTRY -->
-    <div id="nameEntry" class="stage-shell" style="display: none; min-height: 100vh;" aria-label="Save your score">
-        <div class="stage-frame" style="margin: auto;">
-        <div class="glass-panel" style="padding: 2.5rem; max-width: 450px; width: 100%; text-align: center;">
+    <div id="nameEntry" style="display: none; align-items: center; justify-content: center; min-height: 100vh;">
+        <div class="glass-panel" style="padding: 2.5rem; max-width: 450px; width: 90%; text-align: center;">
             <i class="fas fa-crown" style="font-size: 3rem; color: gold;"></i>
             <h2 style="margin: 1rem 0;">Quiz Completed!</h2>
-            <p>Your Score: <strong id="finalScoreSpan">0</strong> <span id="finalScoreTotal">/ 10</span></p>
+            <p>Your Score: <strong id="finalScoreSpan">0</strong> / 8</p>
             <p>Time: <span id="finalTimeSpan">0</span> seconds</p>
             <input type="text" id="playerNameInput" placeholder="Enter your name" class="admin-input" style="margin: 1rem 0;">
-            <div class="btn-row-stack">
-                <button type="button" id="submitScoreBtn" class="neon-btn magnetic-target">Save to Global Leaderboard</button>
-                <button type="button" id="shareScoreBtn" class="btn-ghost magnetic-target"><i class="fas fa-share-alt"></i> Share My Score</button>
-            </div>
-            <p id="shareFeedback" class="share-status" role="status" aria-live="polite"></p>
+            <button id="submitScoreBtn" class="neon-btn">Save to Global Leaderboard</button>
             <p style="margin-top: 1rem; font-size: 0.8rem; opacity: 0.7;">From IEEE ANU Team — Thank you for participating 💙</p>
-        </div>
         </div>
     </div>
 
@@ -505,31 +130,11 @@
         <div class="glass-panel" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
                 <h2><i class="fas fa-shield-alt"></i> Admin Dashboard | <span style="color:#0ff;">GLOBAL REAL-TIME</span> <span class="online-badge"><i class="fas fa-circle" style="color:#0f0; font-size: 0.6rem;"></i> JSONBin SYNC</span></h2>
-                <button type="button" id="closeAdminBtn" class="neon-btn magnetic-target" style="background: #333; padding: 10px 25px;">Exit Admin</button>
-            </div>
-            <div class="admin-bento" id="adminBento">
-                <div class="bento-card bento-span-4">
-                    <div class="admin-stats-inline" id="adminStatsRow">
-                        <div class="stat-card"><h4>Avg time / question</h4><div class="stat-value" id="adminStatAvgTime">—</div></div>
-                        <div class="stat-card"><h4>Accuracy rate</h4><div class="stat-value" id="adminStatAccuracy">—</div></div>
-                    </div>
-                </div>
-                <div class="bento-card bento-span-4">
-                    <div class="bento-card-header">Score distribution (global)</div>
-                    <div class="chart-canvas-frame"><canvas id="chartScoreDist" aria-label="Chart of score distribution"></canvas></div>
-                </div>
-                <div class="bento-card bento-span-4">
-                    <div class="bento-card-header">Avg time per question (sec)</div>
-                    <div class="chart-canvas-frame"><canvas id="chartAvgTimePerQ" aria-label="Chart of average seconds per question"></canvas></div>
-                </div>
-                <div class="bento-card bento-span-12">
-                    <div class="bento-card-header">Top players (score)</div>
-                    <div class="chart-canvas-frame" style="height: clamp(200px, 32vw, 280px);"><canvas id="chartTopPlayers" aria-label="Top five players bar chart"></canvas></div>
-                </div>
+                <button id="closeAdminBtn" class="neon-btn" style="background: #333; padding: 10px 25px;">Exit Admin</button>
             </div>
             <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                <button type="button" id="deleteAllBtn" class="neon-btn neon-btn-danger magnetic-target"><i class="fas fa-trash"></i> Delete All Attempts (Global)</button>
-                <button type="button" id="refreshNowBtn" class="neon-btn magnetic-target" style="background: #555;"><i class="fas fa-sync-alt"></i> Manual Refresh</button>
+                <button id="deleteAllBtn" class="neon-btn neon-btn-danger"><i class="fas fa-trash"></i> Delete All Attempts (Global)</button>
+                <button id="refreshNowBtn" class="neon-btn" style="background: #555;"><i class="fas fa-sync-alt"></i> Manual Refresh</button>
                 <span style="background: rgba(0,255,255,0.1); padding: 10px 20px; border-radius: 50px;"><i class="fas fa-database"></i> Cross-Device Sync: ACTIVE</span>
             </div>
             <div style="overflow-x: auto;">
@@ -538,6 +143,7 @@
                     <tbody id="leaderboardBody"><tr><td colspan="6" style="text-align: center;">📡 Loading global data...</td></tr></tbody>
                 </table>
             </div>
+            <div style="margin-top: 2rem;"><canvas id="scoreChartCanvas" width="500" height="200" style="width:100%; max-width:500px; background: rgba(0,0,0,0.3); border-radius: 20px;"></canvas></div>
         </div>
     </div>
 
@@ -547,1100 +153,440 @@
 </div>
 
 <script>
-"use strict";
-
-/**
- * IEEE ANU Quiz — flagship single-page application
- * Architectural split: QuizEngine (UI flow) ↔ LeaderboardCloudSync (JSONBin I/O untouched)
- */
-
-const QUIZ_DATA = Object.freeze({
-    TOTAL_QS: 10,
-    questions: [
-        { text: "Which of the following represents the correct syntax for defining a variable in C++?", options: ["int = x 5;", "int x = 5;", "x int = 5;", "5 = int x;"], correct: 1 },
-        { text: "What is the main difference between compiled and interpreted languages?", options: ["There is no difference", "A compiler executes directly without translation", "A compiler converts to machine language before execution", "An interpreter is always faster"], correct: 2 },
-        { text: "Which of the following is an example of an interpreted language?", options: ["C++", "Java", "Python", "C"], correct: 2 },
-        { text: "Which of the following represents a valid loop in C++?", options: ["for i = 0 to 10", "for (int i = 0; i < 10; i++)", "for i in range(10)", "loop (i < 10)"], correct: 1 },
-        { text: "Which of the following is a type of malware?", options: ["Firewall", "Antivirus", "Trojan", "VPN"], correct: 2 },
-        { text: "What is phishing?", options: ["An attack across an internal network", "An attempt to trick a user into providing sensitive information", "Internet acceleration", "Data encryption"], correct: 1 },
-        { text: "What is Two-Factor Authentication (2FA)?", options: ["Using two passwords", "An additional layer of security using two verification methods", "Deleting an account", "Changing a password"], correct: 1 },
-        { text: "What is the function of a model in artificial intelligence?", options: ["Displaying images", "A mathematical representation that learns from data to make decisions or predictions", "Storing data", "Operating a device"], correct: 1 },
-        { text: "What is Natural Language Processing (NLP)?", options: ["Image processing", "Understanding and processing human language by computer", "Network analysis", "Game design"], correct: 1 },
-        { text: "What is Artificial Intelligence (AI)?", options: ["Web design", "The ability of systems to mimic human intelligence", "Internet acceleration", "Data storage"], correct: 1 }
-    ]
-});
-
-function escapeHtml(str) {
-    if (!str) return "";
-    return String(str).replace(/[&<>]/g, function(m) {
-        return m === "&" ? "&amp;" : m === "<" ? "&lt;" : "&gt;";
-    });
-}
-
-/** Pointer-driven rim light for glass surfaces (avoid layout thrashing: rAF throttle) */
-class MouseGlowTracker {
-    constructor(root = document.documentElement) {
-        this.root = root;
-        this._raf = null;
-        this._pending = null;
-        this._onMove = this._onMove.bind(this);
-        window.addEventListener("pointermove", this._onMove, { passive: true });
-        this.root.style.setProperty("--glass-glow-strong", window.matchMedia("(pointer: coarse)").matches ? "0.42" : "0.62");
-    }
-    _flush() {
-        this._raf = null;
-        if (!this._pending) return;
-        const { nx, ny } = this._pending;
-        this.root.style.setProperty("--gx", nx + "%");
-        this.root.style.setProperty("--gy", ny + "%");
-    }
-    _onMove(ev) {
-        const nx = Math.min(99, Math.max(1, Math.round(ev.clientX / innerWidth * 1000) / 10));
-        const ny = Math.min(99, Math.max(1, Math.round(ev.clientY / innerHeight * 1000) / 10));
-        this._pending = { nx, ny };
-        if (this._raf) return;
-        this._raf = requestAnimationFrame(() => this._flush());
-    }
-    dispose() {
-        window.removeEventListener("pointermove", this._onMove);
-        if (this._raf) cancelAnimationFrame(this._raf);
-    }
-}
-
-/** Polyphonic gritty UI / feedback cues (Cyber-Industrial tonality) */
-class SoundManager {
-    constructor() {
-        this._ctx = null;
-        this.ambientMuted = true;
-        this._ambientOscs = [];
-        this._ambientMaster = null;
-    }
-    /** Lazy AudioContext bootstrap + resume gesture requirements */
-    context() {
-        if (!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)();
-        if (this._ctx.state === "suspended") this._ctx.resume().catch(() => {});
-        return this._ctx;
-    }
-    _clampVoice(g, t0, peakT, decayT) {
-        g.gain.setValueAtTime(0.001, t0);
-        g.gain.exponentialRampToValueAtTime(peakT, t0 + 0.019);
-        g.gain.exponentialRampToValueAtTime(0.0001, t0 + decayT);
-    }
-    _distortionChain(ctx, osc, amount) {
-        const shaper = ctx.createWaveShaper();
-        const curve = new Float32Array(256);
-        for (let i = 0; i < 256; i++) {
-            const x = (i / 128) - 1;
-            curve[i] = Math.tanh(x * amount) * 0.65;
+    // ======================== JSONBin.io CLOUD STORAGE ========================
+    let BIN_ID = localStorage.getItem('jsonbin_id') || '';
+    let API_KEY = localStorage.getItem('jsonbin_key') || '';
+    let leaderboardData = [];
+    let autoRefreshInterval = null;
+    
+    // Save config
+    document.getElementById('saveConfigBtn').onclick = () => {
+        BIN_ID = document.getElementById('binIdInput').value.trim();
+        API_KEY = document.getElementById('apiKeyInput').value.trim();
+        if (BIN_ID && API_KEY) {
+            localStorage.setItem('jsonbin_id', BIN_ID);
+            localStorage.setItem('jsonbin_key', API_KEY);
+            document.getElementById('configStatus').innerHTML = '✅ Configuration saved! Loading data...';
+            loadFromCloud();
+        } else {
+            document.getElementById('configStatus').innerHTML = '❌ Please enter both Bin ID and API Key';
         }
-        shaper.curve = curve;
-        osc.connect(shaper);
-        return shaper;
-    }
-    playClick() {
-        try {
-            const ctx = this.context(), t = ctx.currentTime;
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            const lp = ctx.createBiquadFilter();
-            lp.type = "lowpass";
-            lp.frequency.value = 3200;
-            o.type = "square";
-            o.frequency.value = 1880 + Math.random() * 80;
-            this._clampVoice(g, t, 0.06, 0.06);
-            o.connect(lp);
-            lp.connect(g);
-            g.connect(ctx.destination);
-            o.start(t);
-            o.stop(t + 0.068);
-        } catch (e) { /* muted context */ }
-    }
-    playCorrect() {
-        try {
-            const ctx = this.context(), t = ctx.currentTime;
-            [[440, 0], [659, 0.03], [880, 0.058]].forEach(([f, off]) => {
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                const src = this._distortionChain(ctx, o, 1.85);
-                o.type = "sawtooth";
-                o.frequency.value = f;
-                this._clampVoice(g, t + off, 0.16, off + 0.36);
-                src.connect(g); g.connect(ctx.destination);
-                o.start(t + off); o.stop(t + off + 0.38);
-            });
-        } catch (e) { /* */ }
-    }
-    playWrong() {
-        try {
-            const ctx = this.context(), t = ctx.currentTime;
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            const flt = ctx.createBiquadFilter();
-            flt.type = "bandpass";
-            flt.frequency.value = 220;
-            flt.Q.value = 4.8;
-            o.type = "square";
-            o.frequency.setValueAtTime(140, t);
-            o.frequency.exponentialRampToValueAtTime(48, t + 0.22);
-            this._clampVoice(g, t, 0.095, 0.28);
-            const dist = this._distortionChain(ctx, o, 3);
-            dist.connect(flt); flt.connect(g); g.connect(ctx.destination);
-            o.start(t); o.stop(t + 0.3);
-            const nz = ctx.createBufferSource();
-            const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.11), ctx.sampleRate);
-            const arr = buf.getChannelData(0);
-            for (let i = 0; i < arr.length; i++) arr[i] = (Math.random() * 2 - 1) * 0.12;
-            const ng = ctx.createGain();
-            this._clampVoice(ng, t, 0.05, 0.12);
-            nz.buffer = buf; nz.loop = false;
-            nz.connect(ng); ng.connect(ctx.destination);
-            nz.start(t);
-        } catch (e) { /* */ }
-    }
-    playFinish() {
-        try {
-            const ctx = this.context(), t = ctx.currentTime;
-            const osc = ctx.createOscillator();
-            const g = ctx.createGain();
-            osc.type = "triangle";
-            osc.frequency.value = 55;
-            osc.frequency.exponentialRampToValueAtTime(220, t + 0.75);
-            g.gain.setValueAtTime(0.001, t);
-            g.gain.exponentialRampToValueAtTime(0.11, t + 0.05);
-            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.92);
-            const hp = ctx.createBiquadFilter();
-            hp.type = "highpass"; hp.frequency.value = 90;
-            osc.connect(hp); hp.connect(g); g.connect(ctx.destination);
-            osc.start(t); osc.stop(t + 0.95);
-        } catch (e) { /* */ }
-    }
-    ambientStop() {
-        this._ambientOscs.forEach((o) => { try { o.stop(); } catch (e) {} });
-        this._ambientOscs = [];
-        this._ambientMaster = null;
-    }
-    ambientRefreshGain() {
-        if (!this._ambientMaster) return;
-        const t = this.context().currentTime + 0.06;
-        this._ambientMaster.gain.linearRampToValueAtTime(this.ambientMuted ? 0.0001 : 0.026, t);
-    }
-    ambientStart() {
-        this.ambientStop();
-        const ctx = this.context();
-        this._ambientMaster = ctx.createGain();
-        this._ambientMaster.gain.value = this.ambientMuted ? 0.0001 : 0.026;
-        this._ambientMaster.connect(ctx.destination);
-        [51.91, 78.125, 116.541].forEach((f, i) => {
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            const b = ctx.createBiquadFilter();
-            o.type = "sine"; o.detune.value = i * -4.2 + 2 * Math.sin(Date.now());
-            o.frequency.value = f * (1 + i * 0.003);
-            b.type = "bandpass"; b.frequency.value = 220 + i * 40;
-            g.gain.value = 0.18 + i * 0.04;
-            o.connect(b); b.connect(g); g.connect(this._ambientMaster);
-            o.start(); this._ambientOscs.push(o);
-        });
-        this.ambientRefreshGain();
-    }
-}
-
-/** High-density buffer-points simulating quantized data streams along +Y */
-class QuantumStreamVFX {
-    constructor(canvas) {
-        this.canvas = canvas;
-        this._runner = null;
-        this._THREE = typeof THREE !== "undefined" ? THREE : null;
-        if (!this._THREE || !canvas) return;
-        this._onResize = () => this._size();
-        this.renderer = new this._THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        this.scene = new this._THREE.Scene();
-        this.camera = new this._THREE.PerspectiveCamera(68, 1, 0.1, 220);
-        this.camera.position.z = 55;
-        this._buildStream();
-        this._size();
-        window.addEventListener("resize", this._onResize, { passive: true });
-        this._tick = this._tick.bind(this);
-        this._runner = requestAnimationFrame(this._tick);
-    }
-    _buildStream() {
-        const N = Math.min(6000, Math.max(2600, Math.floor(innerWidth * innerHeight / 950)));
-        const pos = new Float32Array(N * 3);
-        const speed = new Float32Array(N);
-        const jitter = new Float32Array(N);
-        for (let i = 0; i < N; i++) {
-            pos[i * 3 + 0] = (Math.random() - 0.5) * 110;
-            pos[i * 3 + 1] = Math.random() * 85 - 40;
-            pos[i * 3 + 2] = (Math.random() - 0.5) * 22;
-            speed[i] = 0.12 + Math.random() * 0.38;
-            jitter[i] = Math.random() * Math.PI * 2;
-        }
-        const geo = new this._THREE.BufferGeometry();
-        geo.setAttribute("position", new this._THREE.BufferAttribute(pos, 3));
-        const mat = new this._THREE.PointsMaterial({
-            color: 0x55f6ff,
-            size: innerWidth > 980 ? 0.065 : 0.095,
-            transparent: true,
-            opacity: 0.74,
-            depthWrite: false,
-            blending: this._THREE.AdditiveBlending
-        });
-        this.points = new this._THREE.Points(geo, mat);
-        this.scene.add(this.points);
-        this._n = N;
-        this._speed = speed;
-        this._jitter = jitter;
-        this._t = 0;
-    }
-    _size() {
-        const w = innerWidth,
-            h = innerHeight,
-            dpr = Math.min(window.devicePixelRatio || 1, 2);
-        this.renderer.setPixelRatio(dpr);
-        this.renderer.setSize(w, h, false);
-        this.camera.aspect = w / Math.max(h, 1);
-        this.camera.updateProjectionMatrix();
-    }
-    _tick() {
-        this._runner = requestAnimationFrame(this._tick);
-        if (!this.points) return;
-        this._t += 1;
-        const pos = this.points.geometry.attributes.position.array;
-        for (let i = 0; i < this._n; i++) {
-            pos[i * 3 + 1] += this._speed[i];
-            pos[i * 3 + 0] += Math.sin(this._t * 0.012 + this._jitter[i]) * 0.048;
-            if (pos[i * 3 + 1] > 48) {
-                pos[i * 3 + 1] = -44;
-                pos[i * 3 + 0] = (Math.random() - 0.5) * 110;
-            }
-        }
-        this.points.geometry.attributes.position.needsUpdate = true;
-        this.renderer.render(this.scene, this.camera);
-    }
-    dispose() {
-        if (this._runner) cancelAnimationFrame(this._runner);
-        window.removeEventListener("resize", this._onResize);
-        if (this.points) {
-            this.points.geometry.dispose();
-            this.points.material.dispose();
-            this.scene.remove(this.points);
-        }
-        if (this.renderer) this.renderer.dispose();
-    }
-}
-
-/** JSONBin persistence — PUT/GET structure MUST remain compatible with Mohammed's bin schema */
-class LeaderboardCloudSync {
-    constructor() {
-        this.BIN_ID = localStorage.getItem("jsonbin_id") || "";
-        this.API_KEY = localStorage.getItem("jsonbin_key") || "";
-        /** @type {Array<Object>} mutable leaderboard mirrors remote record */
-        this.leaderboardData = [];
-        this.autoRefreshInterval = null;
-        this.lastWinnerId = null;
-    }
-
-    async loadFromCloud() {
-        if (!this.BIN_ID || !this.API_KEY) {
+    };
+    
+    // Load saved config on startup
+    if (BIN_ID) document.getElementById('binIdInput').value = BIN_ID;
+    if (API_KEY) document.getElementById('apiKeyInput').value = API_KEY;
+    
+    // Load data from JSONBin
+    async function loadFromCloud() {
+        if (!BIN_ID || !API_KEY) {
             console.log("No JSONBin config yet");
-            window.__appHooks.updateSyncStatus(false, "Configure JSONBin");
+            updateSyncStatus(false, "Configure JSONBin");
             return false;
         }
+        
         try {
-            window.__appHooks.updateSyncStatus(false, "Loading...");
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${this.BIN_ID}/latest`, {
-                headers: { "X-Master-Key": this.API_KEY }
+            updateSyncStatus(false, "Loading...");
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': API_KEY }
             });
+            
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
+            
             if (data.record && data.record.leaderboard) {
-                this.leaderboardData = data.record.leaderboard;
+                leaderboardData = data.record.leaderboard;
             } else if (data.record && Array.isArray(data.record)) {
-                this.leaderboardData = data.record;
+                leaderboardData = data.record;
             } else {
-                this.leaderboardData = [];
+                leaderboardData = [];
             }
-            window.__appHooks.renderLeaderboard(this);
-            window.__appHooks.updateSyncStatus(true, "Synced");
+            
+            renderLeaderboard();
+            updateSyncStatus(true, "Synced");
             return true;
-        } catch (e) {
+        } catch(e) {
             console.error("Load error:", e);
-            window.__appHooks.updateSyncStatus(false, "Error loading");
-            const local = localStorage.getItem("ieee_local_backup");
-            if (local) this.leaderboardData = JSON.parse(local);
-            window.__appHooks.renderLeaderboard(this);
+            updateSyncStatus(false, "Error loading");
+            // Try localStorage as fallback
+            const local = localStorage.getItem('ieee_local_backup');
+            if (local) leaderboardData = JSON.parse(local);
+            renderLeaderboard();
             return false;
         }
     }
-
-    async saveToCloud() {
-        if (!this.BIN_ID || !this.API_KEY) {
-            localStorage.setItem("ieee_local_backup", JSON.stringify(this.leaderboardData));
-            window.__appHooks.renderLeaderboard(this);
-            window.__appHooks.updateSyncStatus(true, "Saved locally");
+    
+    // Save data to JSONBin
+    async function saveToCloud() {
+        if (!BIN_ID || !API_KEY) {
+            // Save locally only
+            localStorage.setItem('ieee_local_backup', JSON.stringify(leaderboardData));
+            renderLeaderboard();
+            updateSyncStatus(true, "Saved locally");
             return false;
         }
+        
         try {
-            window.__appHooks.updateSyncStatus(false, "Saving...");
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${this.BIN_ID}`, {
-                method: "PUT",
+            updateSyncStatus(false, "Saving...");
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
                 headers: {
-                    "Content-Type": "application/json",
-                    "X-Master-Key": this.API_KEY
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
                 },
-                body: JSON.stringify({ leaderboard: this.leaderboardData })
+                body: JSON.stringify({ leaderboard: leaderboardData })
             });
+            
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            window.__appHooks.updateSyncStatus(true, "Saved to cloud");
-            localStorage.setItem("ieee_local_backup", JSON.stringify(this.leaderboardData));
+            updateSyncStatus(true, "Saved to cloud");
+            localStorage.setItem('ieee_local_backup', JSON.stringify(leaderboardData));
             return true;
-        } catch (e) {
+        } catch(e) {
             console.error("Save error:", e);
-            localStorage.setItem("ieee_local_backup", JSON.stringify(this.leaderboardData));
-            window.__appHooks.updateSyncStatus(false, "Saved locally only");
+            localStorage.setItem('ieee_local_backup', JSON.stringify(leaderboardData));
+            updateSyncStatus(false, "Saved locally only");
             return false;
         }
     }
-
-    async addScoreEntry(name, score, timeSec) {
+    
+    function updateSyncStatus(success, message) {
+        const syncText = document.getElementById('syncText');
+        if (syncText) {
+            if (success) {
+                syncText.innerHTML = `✅ ${message || 'Cloud Synced'}`;
+            } else {
+                syncText.innerHTML = `🔄 ${message || 'Syncing...'}`;
+            }
+        }
+    }
+    
+    // Add new score
+    async function addScoreEntry(name, score, timeSec) {
         const newEntry = {
-            id: Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+            id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
             name: name.trim().substring(0, 30),
             score: score,
             totalTime: timeSec,
             timestamp: Date.now(),
             dateString: new Date().toLocaleString()
         };
-        this.leaderboardData.unshift(newEntry);
-        if (this.leaderboardData.length > 100) this.leaderboardData = this.leaderboardData.slice(0, 100);
-        await this.saveToCloud();
-        window.__appHooks.showToast(`✅ ${name} added to global leaderboard!`);
+        leaderboardData.unshift(newEntry);
+        if (leaderboardData.length > 100) leaderboardData = leaderboardData.slice(0, 100);
+        await saveToCloud();
+        showToast(`✅ ${name} added to global leaderboard!`);
         return newEntry;
     }
-
-    async deleteAllEntries() {
+    
+    async function deleteAllEntries() {
         if (confirm("⚠️ WARNING: This will DELETE ALL global leaderboard entries from ALL devices. Are you sure?")) {
-            this.leaderboardData = [];
-            await this.saveToCloud();
-            window.__appHooks.renderLeaderboard(this);
-            window.__appHooks.showToast("🗑️ All global entries deleted!", "error");
+            leaderboardData = [];
+            await saveToCloud();
+            renderLeaderboard();
+            showToast("🗑️ All global entries deleted!", "error");
         }
     }
-
-    async refreshFromCloudToast() {
-        await this.loadFromCloud();
-        window.__appHooks.showToast("Leaderboard refreshed from cloud!");
-    }
-}
-
-/** Chart.js dashboards (destroy/redraw avoids WebGL/context leaks across admin visits) */
-class AdminChartBoard {
-    constructor(totalQs, getThemeColors) {
-        this.totalQs = totalQs;
-        this.getThemeColors = getThemeColors;
-        this.charts = { score: null, time: null, top: null };
-    }
-    _destroy(name) {
-        if (this.charts[name]) {
-            try { this.charts[name].destroy(); } catch (e) {}
-            this.charts[name] = null;
-        }
-    }
-    update(leaderboardData) {
-        if (typeof Chart === "undefined") return;
-        const colors = this.getThemeColors();
-        const elS = document.getElementById("chartScoreDist");
-        const elT = document.getElementById("chartAvgTimePerQ");
-        const elP = document.getElementById("chartTopPlayers");
-        if (!elS || !elT || !elP) return;
-        if (!leaderboardData.length) {
-            ["score", "time", "top"].forEach((k) => this._destroy(k));
-            [elS, elT, elP].forEach((c) => {
-                const cx = c.getContext("2d");
-                if (cx) cx.clearRect(0, 0, c.width, c.height);
-            });
-            return;
-        }
-
-        const buckets = Array(this.totalQs + 1).fill(0);
-        const timePerQBuckets = []; // coarse histogram of sec/q
-        leaderboardData.forEach((e) => {
-            buckets[Math.min(this.totalQs, Math.max(0, e.score || 0))]++;
-            const tq = (e.totalTime || 0) / this.totalQs;
-            timePerQBuckets.push(tq);
-        });
-        this._destroy("score");
-        this.charts.score = new Chart(elS.getContext("2d"), {
-            type: "doughnut",
-            data: {
-                labels: buckets.map((_, i) => i + ""),
-                datasets: [{
-                    data: buckets,
-                    backgroundColor: buckets.map((_, i) =>
-                        `hsla(${175 + i * (90 / buckets.length)}, 85%, ${colors.isLight ? "45%" : "52%"}, ${0.25 + i * 0.06})`),
-                    borderColor: colors.grid,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: "right", labels: { color: colors.text, boxWidth: 10 } } }
-            }
-        });
-
-        const histBins = Array(16).fill(0); /* seconds-per-answer bucket (~1s granularity) */
-        timePerQBuckets.forEach((t) => {
-            const r = Math.round(Math.min(40, Math.max(0, t)));
-            const b = Math.min(histBins.length - 1, r);
-            histBins[b]++;
-        });
-        this._destroy("time");
-        this.charts.time = new Chart(elT.getContext("2d"), {
-            type: "bar",
-            data: {
-                labels: histBins.map((_, i) => (i >= histBins.length - 2 ? `${i}s+` : `${i}s`)),
-                datasets: [{
-                    label: "Attempts",
-                    data: histBins,
-                    backgroundColor: "rgba(0, 230, 255, 0.45)",
-                    borderColor: colors.grid,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { ticks: { color: colors.muted }, grid: { color: colors.grid } },
-                    y: { ticks: { color: colors.muted }, grid: { color: colors.grid } }
-                },
-                plugins: { legend: { display: false } }
-            }
-        });
-
-        const sorted = [...leaderboardData].sort((a, b) => b.score - a.score || a.totalTime - b.totalTime).slice(0, 5);
-        this._destroy("top");
-        this.charts.top = new Chart(elP.getContext("2d"), {
-            type: "bar",
-            data: {
-                labels: sorted.map((s) => s.name.slice(0, 9)),
-                datasets: [{
-                    label: "Score",
-                    data: sorted.map((s) => s.score),
-                    backgroundColor: "rgba(154, 120, 255, 0.55)",
-                    borderColor: colors.grid,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                indexAxis: "y",
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        suggestedMax: this.totalQs,
-                        ticks: { color: colors.muted },
-                        grid: { color: colors.grid }
-                    },
-                    y: { ticks: { color: colors.muted }, grid: { color: colors.grid } }
-                }
-            }
-        });
-    }
-}
-
-/**
- * Stateful quiz orchestration — resets kill GSAP timelines + intervals between runs
- */
-class QuizEngine {
-    constructor({ soundManager, TOTAL_QS, questions }) {
-        this.sound = soundManager;
-        this.TOTAL_QS = TOTAL_QS;
-        this.questions = questions;
-        /** Internal snapshot — mutated only through controlled transitions */
-        this.state = this._baselineState();
-        this._timer = null;
-        this._countDownTimer = null;
-        this._optionNodes = [];
-    }
-
-    _baselineState() {
-        return {
-            currentQIndex: 0,
-            currentScore: 0,
-            totalSeconds: 0,
-            quizActive: false,
-            answerLocked: false
-        };
-    }
-
-    dispose() {
-        this._clearIntervals();
-        this._killOptionTweens();
-        gsap.killTweensOf("#questionText");
-    }
-
-    _clearIntervals() {
-        clearInterval(this._timer);
-        this._timer = null;
-        clearInterval(this._countDownTimer);
-        this._countDownTimer = null;
-    }
-
-    _killOptionTweens() {
-        this._optionNodes.forEach((el) => gsap.killTweensOf(el));
-        this._optionNodes = [];
-    }
-
-    reset() {
-        this.dispose();
-        this.state = this._baselineState();
-        const scoreEl = document.getElementById("scoreDisplay");
-        const timeEl = document.getElementById("totalTimerDisplay");
-        const bar = document.getElementById("globalProgressBar");
-        if (scoreEl) scoreEl.innerText = "0";
-        if (timeEl) timeEl.innerText = "00:00";
-        if (bar) { bar.style.width = "0%"; bar.setAttribute("aria-valuenow", "0"); }
-        this.hydrateLabels();
-    }
-
-    hydrateLabels() {
-        const qLab = document.getElementById("qTotalLabel");
-        const ft = document.getElementById("finalScoreTotal");
-        if (qLab) qLab.textContent = "/" + this.TOTAL_QS;
-        if (ft) ft.textContent = "/ " + this.TOTAL_QS;
-    }
-
-    announce(msg) {
-        const el = document.getElementById("quizAriaLiveRegion");
-        if (el) el.textContent = msg;
-    }
-
-    startTimerTick() {
-        clearInterval(this._timer);
-        this._timer = setInterval(() => {
-            if (!this.state.quizActive) return;
-            this.state.totalSeconds++;
-            const m = Math.floor(this.state.totalSeconds / 60),
-                s = this.state.totalSeconds % 60;
-            const lbl = document.getElementById("totalTimerDisplay");
-            if (lbl) lbl.innerText = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-            const prog = (this.state.currentQIndex / this.TOTAL_QS) * 100;
-            const bar = document.getElementById("globalProgressBar");
-            if (bar) {
-                bar.style.width = `${prog}%`;
-                bar.setAttribute("aria-valuenow", String(Math.round(prog)));
-            }
-        }, 1000);
-    }
-
-    mountQuestionIntoDom() {
-        if (!this.state.quizActive) return;
-        this.state.answerLocked = false;
-        const q = this.questions[this.state.currentQIndex];
-        const qt = document.getElementById("questionText");
-        const container = document.getElementById("optionsContainer");
-        if (!qt || !container) return;
-
-        this._killOptionTweens();
-        container.innerHTML = "";
-        qt.textContent = q.text;
-        this.announce(`Question ${this.state.currentQIndex + 1} of ${this.TOTAL_QS}. ${q.text}`);
-
-        gsap.fromTo(qt, { opacity: 0, y: 16 }, {
-            opacity: 1,
-            y: 0,
-            duration: 0.45,
-            ease: "power3.out"
-        });
-
-        q.options.forEach((optText, idx) => {
-            const div = document.createElement("button");
-            div.type = "button";
-            div.className = "option role-option option-enter magnetic-target";
-            div.setAttribute("role", "option");
-            div.setAttribute("aria-label", `${String.fromCharCode(65 + idx)}. ${optText}`);
-            div.setAttribute("aria-selected", "false");
-            div.innerHTML = `<span>${String.fromCharCode(65 + idx)}. ${escapeHtml(optText)}</span>`;
-            div.addEventListener("click", () => this.handleAnswer(idx, div));
-            container.appendChild(div);
-            bindMagnetic(div);
-            this._optionNodes.push(div);
-        });
-
-        const fromSides = Array.from(container.children).map((_, i) => (i % 2 ? 92 : -92));
-        gsap.from(container.children, {
-            x: (i) => fromSides[i],
-            opacity: 0,
-            duration: 0.58,
-            stagger: { each: 0.068, from: "start" },
-            ease: "power3.out",
-            overwrite: true
-        });
-
-        document.getElementById("qCounter").innerText = String(this.state.currentQIndex + 1);
-        const nextBtn = document.getElementById("nextBtnQuiz");
-        if (nextBtn) nextBtn.disabled = true;
-    }
-
-    handleAnswer(selectedIdx, element) {
-        if (this.state.answerLocked || !this.state.quizActive) return;
-        const ok = selectedIdx === this.questions[this.state.currentQIndex].correct;
-        if (ok) {
-            this.state.currentScore++;
-            const sc = document.getElementById("scoreDisplay");
-            if (sc) sc.innerText = String(this.state.currentScore);
-            element.classList.add("correct-glow");
-            const pulse = document.getElementById("correctPulseLayer");
-            if (pulse) {
-                pulse.classList.add("is-on");
-                setTimeout(() => pulse.classList.remove("is-on"), 340);
-            }
-            this.sound.playCorrect();
-            if (navigator.vibrate) navigator.vibrate([14, 45, 20]);
-            this.announce("Correct.");
-        } else {
-            element.classList.add("wrong-glow");
-            document.body.classList.add("quiz-shake");
-            setTimeout(() => document.body.classList.remove("quiz-shake"), 460);
-            this.sound.playWrong();
-            if (navigator.vibrate) navigator.vibrate([35, 70, 40]);
-            this.announce("Incorrect.");
-        }
-        this.state.answerLocked = true;
-        document.querySelectorAll("#optionsContainer .option").forEach((opt) => {
-            opt.style.pointerEvents = "none";
-            opt.setAttribute("aria-disabled", "true");
-            opt.setAttribute("aria-selected", opt === element ? "true" : "false");
-        });
-        document.getElementById("nextBtnQuiz").disabled = false;
-    }
-
-    gotoNextQuestion() {
-        if (!this.state.quizActive) return;
-        if (this.state.currentQIndex + 1 < this.TOTAL_QS) {
-            this.state.currentQIndex++;
-            this.mountQuestionIntoDom();
-        } else {
-            this.finalizeQuiz();
-        }
-    }
-
-    finalizeQuiz() {
-        this.state.quizActive = false;
-        this.sound.playFinish();
-        this._clearIntervals();
-        document.getElementById("quizPage").style.display = "none";
-        document.getElementById("nameEntry").style.display = "flex";
-        document.getElementById("finalScoreSpan").innerText = String(this.state.currentScore);
-        document.getElementById("finalTimeSpan").innerText = String(this.state.totalSeconds);
-        window.finalQuizData = { score: this.state.currentScore, time: this.state.totalSeconds };
-        this.announce(`Quiz finished. Score ${this.state.currentScore} of ${this.TOTAL_QS}.`);
-    }
-
-    startCountdown(onComplete) {
-        let count = 3;
-        const overlay = document.createElement("div");
-        overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:10001;font-size:clamp(3rem,10vw,5rem);font-weight:800;color:#0ff;text-shadow:0 0 25px #0ff;`;
-        overlay.setAttribute("role", "alert");
-        document.body.appendChild(overlay);
-        overlay.textContent = "3";
-        this._clearIntervals();
-        this._countDownTimer = setInterval(() => {
-            if (count > 0) {
-                overlay.textContent = String(count);
-                count--;
-            } else {
-                clearInterval(this._countDownTimer);
-                this._countDownTimer = null;
-                overlay.remove();
-                onComplete();
-            }
-        }, 1000);
-    }
-}
-
-/* ===================== Composer / wiring ===================== */
-
-const soundFx = new SoundManager();
-const cloud = new LeaderboardCloudSync();
-const quizRunner = new QuizEngine({
-    soundManager: soundFx,
-    TOTAL_QS: QUIZ_DATA.TOTAL_QS,
-    questions: QUIZ_DATA.questions
-});
-
-/** magnetic buttons */
-function bindMagnetic(el) {
-    if (!el || el.dataset.magneticBound === "1") return;
-    el.dataset.magneticBound = "1";
-    el.style.willChange = "transform";
-    const pull = el.classList.contains("neon-btn") ? 0.2 : 0.14;
-    el.addEventListener("mousemove", (e) => {
-        const r = el.getBoundingClientRect();
-        const ox = e.clientX - (r.left + r.width / 2);
-        const oy = e.clientY - (r.top + r.height / 2);
-        gsap.to(el, { x: ox * pull * 0.17, y: oy * pull * 0.17, duration: 0.31, ease: "power3.out" });
-    });
-    el.addEventListener("mouseleave", () =>
-        gsap.to(el, { x: 0, y: 0, duration: 0.64, ease: "elastic.out(1,.5)" })
-    );
-}
-
-function themePalette() {
-    const light = document.documentElement.getAttribute("data-theme") === "light";
-    return {
-        isLight: light,
-        text: light ? "#0f1630" : "#eef5ff",
-        muted: light ? "#4a5678" : "#9aaecb",
-        grid: light ? "rgba(0,50,120,0.12)" : "rgba(120,230,255,0.09)"
-    };
-}
-
-const dashboards = new AdminChartBoard(QUIZ_DATA.TOTAL_QS, themePalette);
-
-window.__appHooks = {
-    updateSyncStatus(success, message) {
-        const syncText = document.getElementById("syncText");
-        const syncEl = document.getElementById("syncStatus");
-        const hb = document.getElementById("heartbeatSync");
-        const msg = message || "";
-        const busy = !success && (msg.includes("...") || /loading|saving/i.test(msg));
-        if (syncEl) {
-            syncEl.classList.toggle("busy", busy);
-            syncEl.style.setProperty("--sync-pulse-dur", busy ? "1.05s" : "2.8s");
-            syncEl.style.setProperty("--sync-glow", busy ? "1" : success ? "0.62" : "0.42");
-        }
-        if (syncText) {
-            syncText.innerHTML = success ? `✅ ${msg || "Cloud Synced"}` : `🔄 ${msg || "Syncing..."}`;
-        }
-        if (hb) {
-            hb.classList.remove("status-error", "status-busy", "status-idle");
-            if (busy) hb.classList.add("status-busy");
-            else if (!success && (/error/i.test(msg) || /^saved locally only$/i.test(msg))) hb.classList.add("status-error");
-            else if (!success && /configure/i.test(msg)) hb.classList.add("status-idle");
-        }
-    },
-
-    renderLeaderboard(syncCtx) {
-        const tbody = document.getElementById("leaderboardBody");
+    
+    function renderLeaderboard() {
+        const tbody = document.getElementById('leaderboardBody');
         if (!tbody) return;
-        const data = syncCtx.leaderboardData;
-
-        function updateStats() {
-            const elAvg = document.getElementById("adminStatAvgTime");
-            const elAcc = document.getElementById("adminStatAccuracy");
-            if (!data.length) {
-                if (elAvg) elAvg.textContent = "—";
-                if (elAcc) elAcc.textContent = "—";
-                return;
-            }
-            const n = data.length;
-            const avgPerQ = data.reduce((s, e) => s + e.totalTime / QUIZ_DATA.TOTAL_QS, 0) / n;
-            const accuracy = data.reduce((s, e) => s + e.score / QUIZ_DATA.TOTAL_QS, 0) / n * 100;
-            if (elAvg) elAvg.textContent = avgPerQ.toFixed(1) + "s";
-            if (elAcc) elAcc.textContent = accuracy.toFixed(1) + "%";
-        }
-
-        const sorted = [...data].sort((a, b) => {
+        
+        const sorted = [...leaderboardData].sort((a, b) => {
             if (a.score !== b.score) return b.score - a.score;
             return a.totalTime - b.totalTime;
         });
-
-        updateStats();
-
+        
         if (sorted.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">✨ No entries yet. Be the first to take the quiz! ✨</td></tr>';
-            dashboards.update([]);
-            window.__appHooks.checkWinner(syncCtx, sorted);
+            updateChart([]);
             return;
         }
-
-        tbody.innerHTML = "";
+        
+        tbody.innerHTML = '';
         sorted.forEach((entry, idx) => {
             const row = tbody.insertRow();
             const mins = Math.floor(entry.totalTime / 60);
             const secs = entry.totalTime % 60;
-            const formattedTime = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+            const formattedTime = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             row.innerHTML = `
                 <td style="font-weight: bold; color: #0ff;">${idx + 1}</td>
                 <td><i class="fas fa-user-astronaut"></i> ${escapeHtml(entry.name)}</td>
-                <td><span style="color: #0ff; font-weight: bold;">${entry.score}/${QUIZ_DATA.TOTAL_QS}</span> ⭐</td>
+                <td><span style="color: #0ff; font-weight: bold;">${entry.score}/8</span> ⭐</td>
                 <td>${entry.totalTime} sec</td>
                 <td>${formattedTime}</td>
                 <td style="font-size: 0.8rem;">${entry.dateString || new Date(entry.timestamp).toLocaleString()}</td>
             `;
         });
-
-        dashboards.update(data);
-        window.__appHooks.checkWinner(syncCtx, sorted);
-    },
-
-    checkWinner(syncCtx, sorted) {
-        if (!sorted.length) return;
-        const winner = sorted[0];
-        const winnerKey = `${winner.name}_${winner.score}`;
-        if (syncCtx.lastWinnerId !== winnerKey) {
-            syncCtx.lastWinnerId = winnerKey;
-            window.__appHooks.showToast(`🏆 GLOBAL LEADER: ${escapeHtml(winner.name)} | Score: ${winner.score}/${QUIZ_DATA.TOTAL_QS}`);
-        }
-    },
-
-    showToast(msg, type = "info") {
-        const toast = document.getElementById("liveWinnerToast");
-        toast.style.display = "flex";
-        toast.innerHTML = `<i class="fas fa-bell"></i> ${msg}`;
-        toast.style.background = type === "error" ? "#ff416c" : "#ffb347";
-        setTimeout(() => {
-            toast.style.display = "none";
-            toast.style.background = "linear-gradient(135deg, #ffb347, #ff5e00)";
-        }, 3000);
+        
+        updateChart(sorted);
+        checkAndShowWinner(sorted);
     }
-};
-
-quizRunner.hydrateLabels();
-
-/* Config UI */
-document.getElementById("saveConfigBtn").onclick = () => {
-    soundFx.playClick();
-    cloud.BIN_ID = document.getElementById("binIdInput").value.trim();
-    cloud.API_KEY = document.getElementById("apiKeyInput").value.trim();
-    if (cloud.BIN_ID && cloud.API_KEY) {
-        localStorage.setItem("jsonbin_id", cloud.BIN_ID);
-        localStorage.setItem("jsonbin_key", cloud.API_KEY);
-        document.getElementById("configStatus").innerHTML = "✅ Configuration saved! Loading data...";
-        cloud.loadFromCloud();
-    } else {
-        document.getElementById("configStatus").innerHTML = "❌ Please enter both Bin ID and API Key";
-    }
-};
-if (cloud.BIN_ID) document.getElementById("binIdInput").value = cloud.BIN_ID;
-if (cloud.API_KEY) document.getElementById("apiKeyInput").value = cloud.API_KEY;
-
-document.getElementById("startQuizBtn").onclick = () => {
-    soundFx.playClick();
-    quizRunner.reset();
-    document.getElementById("landingSection").style.display = "none";
-    document.getElementById("quizPage").style.display = "flex";
-    quizRunner.startCountdown(() => {
-        quizRunner.state.quizActive = true;
-        quizRunner.startTimerTick();
-        quizRunner.mountQuestionIntoDom();
-    });
-};
-
-document.getElementById("nextBtnQuiz").onclick = () => {
-    soundFx.playClick();
-    quizRunner.gotoNextQuestion();
-};
-
-document.getElementById("submitScoreBtn").onclick = async () => {
-    soundFx.playClick();
-    const nameInput = document.getElementById("playerNameInput").value.trim();
-    if (!nameInput) {
-        alert("Please enter your name!");
-        return;
-    }
-    const { score, time } = window.finalQuizData;
-    await cloud.addScoreEntry(nameInput, score, time);
-    const threshold = Math.max(7, Math.ceil(QUIZ_DATA.TOTAL_QS * 0.8));
-    if (typeof confetti === "function" && score >= threshold) {
-        confetti({ particleCount: 160, spread: 88, ticks: 220, gravity: 0.95, origin: { y: 0.68 } });
-        confetti({ particleCount: 60, angle: 120, spread: 70, ticks: 180, gravity: 0.9, origin: { x: 1, y: 0.7 } });
-    }
-    if (score >= threshold) soundFx.playFinish();
-    document.getElementById("nameEntry").style.display = "none";
-    document.getElementById("landingSection").style.display = "flex";
-};
-
-function buildSharePayload() {
-    const d = window.finalQuizData;
-    if (!d) return "";
-    const acc = ((100 * d.score / QUIZ_DATA.TOTAL_QS).toFixed(1)) + "%";
-    return `IEEE ANU Quiz Challenge ⚡️
-Score: ${d.score} / ${QUIZ_DATA.TOTAL_QS}
-Accuracy: ${acc}
-Time: ${d.time}s
-— IEEE ANU Team`;
-}
-
-document.getElementById("shareScoreBtn").onclick = async () => {
-    soundFx.playClick();
-    const fb = document.getElementById("shareFeedback");
-    fb.textContent = "";
-    const text = buildSharePayload();
-    try {
-        if (navigator.share) {
-            await navigator.share({ title: "IEEE ANU Quiz Challenge", text });
-            fb.textContent = "Shared via device dialog.";
+    
+    function updateChart(sortedData) {
+        const canvas = document.getElementById('scoreChartCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const top5 = sortedData.slice(0, 5);
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        
+        if (top5.length === 0) {
+            ctx.fillStyle = '#aaa';
+            ctx.font = '14px Inter';
+            ctx.fillText('No data yet', 20, 50);
             return;
         }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            await navigator.clipboard.writeText(text);
-            fb.textContent = "Summary copied to clipboard.";
-        } else throw new Error("no_share");
-
-        const c = document.createElement("canvas");
-        c.width = 1200; c.height = 630;
-        const x = c.getContext("2d");
-        const g = x.createLinearGradient(0, 0, c.width, c.height);
-        g.addColorStop(0, "#070b1f");
-        g.addColorStop(0.52, "#0c2240");
-        g.addColorStop(1, "#102a52");
-        x.fillStyle = g;
-        x.fillRect(0, 0, c.width, c.height);
-        x.fillStyle = "#7af8ff";
-        x.font = "700 72px Inter, system-ui, sans-serif";
-        x.fillText("IEEE ANU Quiz", 72, 150);
-        x.fillStyle = "#e8f4ff";
-        x.font = "500 40px Inter, system-ui, sans-serif";
-        const d = window.finalQuizData;
-        if (d) {
-            x.fillText(`${d.score} / ${QUIZ_DATA.TOTAL_QS} pts · ${d.time}s`, 72, 240);
-            x.font = "400 26px Inter, system-ui, sans-serif";
-            x.fillStyle = "rgba(232,244,255,0.82)";
-            x.fillText("#IEEE · #ANU · Cross-device sync leaderboard", 72, c.height - 70);
-        }
-        c.toBlob(async (blob) => {
-            if (!blob || !navigator.clipboard || !window.ClipboardItem) return;
-            try {
-                await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-                fb.textContent = fb.textContent + " Card PNG also copied where supported.";
-            } catch (err) { /* noop */ }
+        
+        const barWidth = (w - 80) / Math.max(top5.length, 1) - 10;
+        const maxScore = 8;
+        top5.forEach((item, i) => {
+            const barHeight = (item.score / maxScore) * (h - 60);
+            const x = 40 + i * (barWidth + 15);
+            const y = h - 30 - barHeight;
+            ctx.fillStyle = '#0ff';
+            ctx.fillRect(x, y, barWidth, barHeight);
+            ctx.fillStyle = '#fff';
+            ctx.font = '10px Inter';
+            ctx.fillText(item.name.substring(0, 6), x, h - 10);
+            ctx.fillStyle = '#0ff';
+            ctx.fillText(item.score, x + 5, y - 5);
         });
-    } catch (err) {
-        fb.textContent = "Share/copy blocked — use manual copy.";
     }
-};
-
-document.addEventListener("keydown", (e) => {
-    const qp = document.getElementById("quizPage");
-    if (!quizRunner.state.quizActive || qp.style.display === "none") return;
-    const ae = document.activeElement;
-    if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA")) return;
-
-    const nextBtn = document.getElementById("nextBtnQuiz");
-    if ((e.key === "Enter" || e.code === "Enter") && nextBtn && !nextBtn.disabled) {
-        e.preventDefault();
-        soundFx.playClick();
-        quizRunner.gotoNextQuestion();
-        return;
+    
+    let lastWinnerId = null;
+    function checkAndShowWinner(sorted) {
+        if (sorted.length === 0) return;
+        const winner = sorted[0];
+        const winnerKey = `${winner.name}_${winner.score}`;
+        if (lastWinnerId !== winnerKey) {
+            lastWinnerId = winnerKey;
+            showToast(`🏆 GLOBAL LEADER: ${escapeHtml(winner.name)} | Score: ${winner.score}/8`);
+        }
     }
-    if (quizRunner.state.answerLocked) return;
-    const key = e.key.toLowerCase();
-    const map = { a: 0, b: 1, c: 2, d: 3 };
-    if (Object.prototype.hasOwnProperty.call(map, key)) {
-        e.preventDefault();
-        const opts = document.querySelectorAll("#optionsContainer .option");
-        if (opts[map[key]]) opts[map[key]].click();
+    
+    function showToast(msg, type = 'info') {
+        const toast = document.getElementById('liveWinnerToast');
+        toast.style.display = 'flex';
+        toast.innerHTML = `<i class="fas fa-bell"></i> ${msg}`;
+        toast.style.background = type === 'error' ? '#ff416c' : '#ffb347';
+        setTimeout(() => {
+            toast.style.display = 'none';
+            toast.style.background = 'linear-gradient(135deg, #ffb347, #ff5e00)';
+        }, 3000);
     }
-}, true);
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    async function refreshData() {
+        await loadFromCloud();
+        showToast("Leaderboard refreshed from cloud!");
+    }
+    
+    // ======================== QUIZ LOGIC ========================
+   // ======================== QUIZ LOGIC ========================
+const questions = [
+    { text: "Which of the following represents the correct syntax for defining a variable in C++?", options: ["int = x 5;", "int x = 5;", "x int = 5;", "5 = int x;"], correct: 1 },
 
-function openAdminModal() {
-    const modal = document.createElement("div");
-    modal.className = "modal-overlay";
-    modal.innerHTML = `
-        <div class="glass-panel" style="padding: 2rem; width: 90%; max-width: 400px; text-align: center;">
-            <i class="fas fa-user-shield" style="font-size: 3rem; color: #0ff;"></i>
-            <h2 style="margin: 1rem 0;">Admin Authentication</h2>
-            <input type="password" id="adminPasswordInput" class="admin-input" placeholder="Enter Admin Password" style="margin: 1rem 0;">
-            <button type="button" id="confirmAdminBtn" class="neon-btn magnetic-target" style="width: 100%;">Unlock Global Dashboard</button>
-            <p style="margin-top: 1rem; font-size: 0.8rem;">Access Pass: <strong style="color:#0ff;">admin123</strong></p>
-            <button type="button" id="closeModalBtn" class="magnetic-target" style="background: none; border: none; color: #aaa; margin-top: 1rem; cursor: pointer;">Cancel</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    modal.querySelectorAll(".magnetic-target").forEach(bindMagnetic);
-    document.getElementById("confirmAdminBtn").onclick = async () => {
-        const pass = document.getElementById("adminPasswordInput").value;
-        if (pass === "admin123") {
-            modal.remove();
-            document.getElementById("landingSection").style.display = "none";
-            document.getElementById("adminPanel").style.display = "block";
-            await cloud.loadFromCloud();
-            if (cloud.autoRefreshInterval) clearInterval(cloud.autoRefreshInterval);
-            cloud.autoRefreshInterval = setInterval(() => cloud.loadFromCloud(), 5000);
-        } else alert("❌ Invalid password!");
+    { text: "What is the main difference between compiled and interpreted languages?", options: ["There is no difference", "A compiler executes directly without translation", "A compiler converts to machine language before execution", "An interpreter is always faster"], correct: 2 },
+
+    { text: "Which of the following is an example of an interpreted language?", options: ["C++", "Java", "Python", "C"], correct: 2 },
+
+    { text: "Which of the following represents a valid loop in C++?", options: ["for i = 0 to 10", "for (int i = 0; i < 10; i++)", "for i in range(10)", "loop (i < 10)"], correct: 1 },
+
+    { text: "Which of the following is a type of malware?", options: ["Firewall", "Antivirus", "Trojan", "VPN"], correct: 2 },
+
+    { text: "What is phishing?", options: ["An attack across an internal network", "An attempt to trick a user into providing sensitive information", "Internet acceleration", "Data encryption"], correct: 1 },
+
+    { text: "What is Two-Factor Authentication (2FA)?", options: ["Using two passwords", "An additional layer of security using two verification methods", "Deleting an account", "Changing a password"], correct: 1 },
+
+    { text: "What is the function of a model in artificial intelligence?", options: ["Displaying images", "A mathematical representation that learns from data to make decisions or predictions", "Storing data", "Operating a device"], correct: 1 },
+
+    { text: "What is Natural Language Processing (NLP)?", options: ["Image processing", "Understanding and processing human language by computer", "Network analysis", "Game design"], correct: 1 },
+
+    { text: "What is Artificial Intelligence (AI)?", options: ["Web design", "The ability of systems to mimic human intelligence", "Internet acceleration", "Data storage"], correct: 1 }
+];
+
+// 🔥 عدلنا العدد إلى 10
+const TOTAL_QS = 10;
+    
+    let currentQIndex = 0, currentScore = 0, totalSeconds = 0, quizActive = false, timerInterval = null, answerLocked = false;
+    
+    function resetQuiz() {
+        currentQIndex = 0; currentScore = 0; totalSeconds = 0; answerLocked = false;
+        document.getElementById('scoreDisplay').innerText = '0';
+        document.getElementById('totalTimerDisplay').innerText = '00:00';
+        if (timerInterval) clearInterval(timerInterval);
+    }
+    
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (quizActive) {
+                totalSeconds++;
+                const mins = Math.floor(totalSeconds / 60), secs = totalSeconds % 60;
+                document.getElementById('totalTimerDisplay').innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                const progPercent = (currentQIndex / TOTAL_QS) * 100;
+                document.getElementById('globalProgressBar').style.width = `${progPercent}%`;
+            }
+        }, 1000);
+    }
+    
+    function loadQuestion() {
+        if (!quizActive) return;
+        answerLocked = false;
+        const q = questions[currentQIndex];
+        document.getElementById('questionText').innerText = q.text;
+        const container = document.getElementById('optionsContainer');
+        container.innerHTML = '';
+        q.options.forEach((opt, idx) => {
+            const div = document.createElement('div');
+            div.className = 'option';
+            div.innerHTML = `<span>${String.fromCharCode(65+idx)}. ${opt}</span>`;
+            div.onclick = () => handleAnswer(idx, div);
+            container.appendChild(div);
+        });
+        document.getElementById('qCounter').innerText = currentQIndex + 1;
+        document.getElementById('nextBtnQuiz').disabled = true;
+    }
+    
+    function playSound(correct) {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = correct ? 880 : 440;
+            gain.gain.value = 0.15;
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+            osc.stop(audioCtx.currentTime + 0.3);
+        } catch(e) {}
+    }
+    
+    function handleAnswer(selectedIdx, element) {
+        if (answerLocked || !quizActive) return;
+        const isCorrect = (selectedIdx === questions[currentQIndex].correct);
+        if (isCorrect) { currentScore++; document.getElementById('scoreDisplay').innerText = currentScore; element.classList.add('correct-glow'); playSound(true); }
+        else { element.classList.add('wrong-glow'); playSound(false); }
+        answerLocked = true;
+        document.querySelectorAll('.option').forEach(opt => opt.style.pointerEvents = 'none');
+        document.getElementById('nextBtnQuiz').disabled = false;
+    }
+    
+    function nextQuestion() {
+        if (!quizActive) return;
+        if (currentQIndex + 1 < TOTAL_QS) { currentQIndex++; loadQuestion(); }
+        else finishQuiz();
+    }
+    
+    function finishQuiz() {
+        quizActive = false;
+        if (timerInterval) clearInterval(timerInterval);
+        document.getElementById('quizPage').style.display = 'none';
+        document.getElementById('nameEntry').style.display = 'flex';
+        document.getElementById('finalScoreSpan').innerText = currentScore;
+        document.getElementById('finalTimeSpan').innerText = totalSeconds;
+        window.finalQuizData = { score: currentScore, time: totalSeconds };
+    }
+    
+    function startCountdown() {
+        let count = 3;
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:10001;font-size:5rem;font-weight:bold;color:#0ff;text-shadow:0 0 20px #0ff;';
+        document.body.appendChild(overlay);
+        const interval = setInterval(() => {
+            if (count > 0) { overlay.innerHTML = `<span>${count}</span>`; count--; }
+            else { clearInterval(interval); overlay.remove(); quizActive = true; startTimer(); loadQuestion(); }
+        }, 1000);
+        overlay.innerHTML = `<span>3</span>`;
+    }
+    
+    // Navigation
+    document.getElementById('startQuizBtn').onclick = () => {
+        resetQuiz();
+        document.getElementById('landingSection').style.display = 'none';
+        document.getElementById('quizPage').style.display = 'block';
+        startCountdown();
     };
-    document.getElementById("closeModalBtn").onclick = () => modal.remove();
-}
-
-document.getElementById("openAdminBtn").onclick = () => { soundFx.playClick(); openAdminModal(); };
-document.getElementById("closeAdminBtn").onclick = () => {
-    document.getElementById("adminPanel").style.display = "none";
-    document.getElementById("landingSection").style.display = "flex";
-    if (cloud.autoRefreshInterval) clearInterval(cloud.autoRefreshInterval);
-};
-document.getElementById("deleteAllBtn").onclick = () => cloud.deleteAllEntries();
-document.getElementById("refreshNowBtn").onclick = () => { soundFx.playClick(); cloud.refreshFromCloudToast(); };
-
-document.querySelectorAll(".magnetic-target").forEach(bindMagnetic);
-
-document.body.addEventListener("click", (e) => {
-    if (!e.target.closest(".neon-btn, .btn-ghost, .pill-toggle, .ambient-pill, .option, #saveConfigBtn")) return;
-    document.body.classList.add("chromatic-flick");
-    clearTimeout(window.__cae);
-    window.__cae = setTimeout(() => document.body.classList.remove("chromatic-flick"), 95);
-}, true);
-
-const rootHtml = document.documentElement;
-const themeToggleBtn = document.getElementById("themeToggle");
-const themeLabelEl = themeToggleBtn && themeToggleBtn.querySelector(".theme-label");
-const storedTheme = localStorage.getItem("ieee_theme");
-
-function applyTheme(mode) {
-    if (mode === "light") {
-        rootHtml.setAttribute("data-theme", "light");
-        themeToggleBtn && themeToggleBtn.setAttribute("aria-pressed", "true");
-        if (themeLabelEl) themeLabelEl.textContent = "Light";
-    } else {
-        rootHtml.removeAttribute("data-theme");
-        themeToggleBtn && themeToggleBtn.setAttribute("aria-pressed", "false");
-        if (themeLabelEl) themeLabelEl.textContent = "Dark";
+    document.getElementById('nextBtnQuiz').onclick = nextQuestion;
+    document.getElementById('submitScoreBtn').onclick = async () => {
+        const nameInput = document.getElementById('playerNameInput').value.trim();
+        if (!nameInput) { alert("Please enter your name!"); return; }
+        const { score, time } = window.finalQuizData;
+        await addScoreEntry(nameInput, score, time);
+        document.getElementById('nameEntry').style.display = 'none';
+        document.getElementById('landingSection').style.display = 'flex';
+    };
+    
+    // Admin
+    function openAdminModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="glass-panel" style="padding: 2rem; width: 90%; max-width: 400px; text-align: center;">
+                <i class="fas fa-user-shield" style="font-size: 3rem; color: #0ff;"></i>
+                <h2 style="margin: 1rem 0;">Admin Authentication</h2>
+                <input type="password" id="adminPasswordInput" class="admin-input" placeholder="Enter Admin Password" style="margin: 1rem 0;">
+                <button id="confirmAdminBtn" class="neon-btn" style="width: 100%;">Unlock Global Dashboard</button>
+                <p style="margin-top: 1rem; font-size: 0.8rem;">Access Pass: <strong style="color:#0ff;">admin123</strong></p>
+                <button id="closeModalBtn" style="background: none; border: none; color: #aaa; margin-top: 1rem; cursor: pointer;">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('confirmAdminBtn').onclick = async () => {
+            const pass = document.getElementById('adminPasswordInput').value;
+            if (pass === 'admin123') {
+                modal.remove();
+                document.getElementById('landingSection').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                await loadFromCloud();
+                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+                autoRefreshInterval = setInterval(() => { loadFromCloud(); }, 5000);
+            } else { alert("❌ Invalid password!"); }
+        };
+        document.getElementById('closeModalBtn').onclick = () => modal.remove();
     }
-    dashboards.update(cloud.leaderboardData);
-}
-
-applyTheme(storedTheme === "light" ? "light" : "dark");
-
-themeToggleBtn && themeToggleBtn.addEventListener("click", () => {
-    soundFx.playClick();
-    const nextLight = rootHtml.getAttribute("data-theme") !== "light";
-    localStorage.setItem("ieee_theme", nextLight ? "light" : "dark");
-    soundFx.context();
-    applyTheme(nextLight ? "light" : "dark");
-});
-
-const ambientToggleBtn = document.getElementById("ambientToggle");
-function updateAmbientToggleUi() {
-    if (!ambientToggleBtn) return;
-    const icon = ambientToggleBtn.querySelector("i");
-    const label = ambientToggleBtn.querySelector(".label");
-    ambientToggleBtn.classList.toggle("muted", soundFx.ambientMuted);
-    if (icon) icon.className = "fas " + (soundFx.ambientMuted ? "fa-volume-mute" : "fa-volume-up");
-    if (label) label.textContent = soundFx.ambientMuted ? "Ambient: Off" : "Ambient: On";
-}
-
-ambientToggleBtn && ambientToggleBtn.addEventListener("click", () => {
-    soundFx.playClick();
-    soundFx.ambientMuted = !soundFx.ambientMuted;
-    soundFx.context();
-    if (!soundFx.ambientMuted && !soundFx._ambientMaster) soundFx.ambientStart();
-    soundFx.ambientRefreshGain();
-    updateAmbientToggleUi();
-});
-updateAmbientToggleUi();
-
-const mouseGlow = new MouseGlowTracker();
-const quantumFx = new QuantumStreamVFX(document.getElementById("threeQuantumCanvas"));
-
-setTimeout(async () => {
-    document.getElementById("loadingScreen").style.display = "none";
-    document.getElementById("appRoot").style.display = "block";
-    if (cloud.BIN_ID && cloud.API_KEY) await cloud.loadFromCloud();
-    gsap.from(".glass-panel", { duration: 0.78, scale: 0.92, opacity: 0, y: 28, stagger: 0.08 });
-}, 1500);
+    
+    document.getElementById('openAdminBtn').onclick = openAdminModal;
+    document.getElementById('closeAdminBtn').onclick = () => {
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('landingSection').style.display = 'flex';
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    };
+    document.getElementById('deleteAllBtn').onclick = deleteAllEntries;
+    document.getElementById('refreshNowBtn').onclick = () => { refreshData(); };
+    
+    // Particles background
+    const canvas = document.getElementById('particleCanvas');
+    const ctxPart = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    let particles = [];
+    for (let i = 0; i < 100; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2 + 1, alpha: Math.random() * 0.5, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.3 });
+    function animateParticles() {
+        ctxPart.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { ctxPart.beginPath(); ctxPart.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctxPart.fillStyle = `rgba(0, 200, 255, ${p.alpha})`; ctxPart.fill(); p.x += p.vx; p.y += p.vy; if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0; if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0; });
+        requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    
+    // Init
+    setTimeout(async () => {
+        document.getElementById('loadingScreen').style.display = 'none';
+        document.getElementById('appRoot').style.display = 'block';
+        if (BIN_ID && API_KEY) await loadFromCloud();
+        gsap.from('.glass-panel', { duration: 0.8, scale: 0.9, opacity: 0, y: 30, stagger: 0.1 });
+    }, 1500);
 </script>
 </body>
 </html>
